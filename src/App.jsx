@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Portfolio from './components/Portfolio'
@@ -38,5 +39,6 @@ export default function App() {
         <Route path="/reviews" element={<ReviewsPage />} />
       </Routes>
     </BrowserRouter>
+    <Analytics />
   )
 }
