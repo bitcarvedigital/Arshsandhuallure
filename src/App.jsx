@@ -30,17 +30,19 @@ function Home() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/book" element={<BookingPage />} />
-        <Route path="/services" element={<ServicesPage />} />
-        <Route path="/reviews" element={<ReviewsPage />} />
-      </Routes>
-    </BrowserRouter>
-    <Analytics />
-    <SpeedInsights />
+    <>
+      <BrowserRouter>
+        <ScrollToTop />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/book" element={<BookingPage />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/reviews" element={<ReviewsPage />} />
+        </Routes>
+      </BrowserRouter>
+      <Analytics />
+      <SpeedInsights />
+    </>
   )
 }
