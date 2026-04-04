@@ -11,7 +11,7 @@ export default function BookingCTA() {
         backgroundImage: "url('/images/complimentary%20consultation%20BG.jpg')",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
+        backgroundAttachment: window.innerWidth > 768 ? 'fixed' : 'scroll',
       }}
     >
       <div className="absolute inset-0 bg-[#0A0A0A]/60" />
