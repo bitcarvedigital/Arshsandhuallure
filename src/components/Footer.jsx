@@ -95,6 +95,9 @@ export default function Footer() {
         <p className="text-[#5A4A40] text-[10px] tracking-[0.2em] uppercase text-center">
           &copy; {new Date().getFullYear()} Arsh Sandhu Allure. All rights reserved.
         </p>
+        <p className="text-[#3A3A3A] text-[9px] tracking-[0.15em] uppercase text-center mt-3">
+          Powered by Pixelcarve Digital
+        </p>
 
       </div>
     </footer>
