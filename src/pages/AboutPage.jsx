@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import Navbar from '../components/Navbar'
 import About from '../components/About'
 import Expertise from '../components/Expertise'
@@ -59,6 +60,10 @@ function WorkTogether() {
 export default function AboutPage() {
   return (
     <>
+      <Helmet>
+        <title>About Arsh Sandhu | Luxury Beauty Artist in Canada</title>
+        <meta name="description" content="Meet Arsh Sandhu — a luxury hair and makeup artist based in Canada with 200+ brides styled and 600+ events served. Precision, passion, and artistry in every look." />
+      </Helmet>
       <Navbar />
       <div>
         <About />

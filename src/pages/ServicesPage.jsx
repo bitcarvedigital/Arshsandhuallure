@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
@@ -47,6 +48,10 @@ export default function ServicesPage() {
 
   return (
     <>
+      <Helmet>
+        <title>Services | Bridal, Events & Editorial Hair and Makeup | Arsh Sandhu Allure</title>
+        <meta name="description" content="Explore luxury hair and makeup services for brides, special events, and editorial shoots. Arsh Sandhu Allure delivers flawless, bespoke beauty across Canada." />
+      </Helmet>
       <Navbar />
 
       {/* Services We Offer */}

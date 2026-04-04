@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Helmet } from 'react-helmet-async'
 import Navbar from '../components/Navbar'
 import Reviews from '../components/Reviews'
 import ReviewForm from '../components/ReviewForm'
@@ -19,6 +20,10 @@ export default function ReviewsPage() {
 
   return (
     <>
+      <Helmet>
+        <title>Client Reviews | Arsh Sandhu Allure</title>
+        <meta name="description" content="Read real reviews from brides and clients of Arsh Sandhu Allure. See why clients trust Arsh for their most important beauty moments across Canada." />
+      </Helmet>
       <Navbar />
       <div>
         <Reviews onLeaveReview={() => setShowForm(true)} />

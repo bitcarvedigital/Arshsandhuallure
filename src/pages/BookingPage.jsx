@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
@@ -169,6 +170,10 @@ export default function BookingPage() {
 
   return (
     <>
+      <Helmet>
+        <title>Book a Consultation | Arsh Sandhu Allure</title>
+        <meta name="description" content="Book your luxury bridal hair and makeup consultation with Arsh Sandhu. Serving brides and clients across Canada for weddings, events, and editorial shoots." />
+      </Helmet>
       <Navbar />
       <section className="bg-beige min-h-screen pt-36 pb-24 px-6">
         <div className="max-w-2xl mx-auto">

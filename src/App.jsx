@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import Navbar from './components/Navbar'
@@ -17,6 +18,11 @@ import ScrollToTop from './components/ScrollToTop'
 function Home() {
   return (
     <>
+      <Helmet>
+        <title>Arsh Sandhu Allure | Luxury Bridal Hair & Makeup Artist in Canada</title>
+        <meta name="description" content="Arsh Sandhu Allure offers luxury bridal hair and makeup artistry for weddings, events, and editorial shoots across Canada. Book your complimentary consultation today." />
+        <meta name="keywords" content="bridal makeup artist Canada, South Asian bridal hair makeup, luxury wedding makeup artist, bridal hair stylist Canada, Arsh Sandhu" />
+      </Helmet>
       <Navbar />
       <Hero />
       <Portfolio />
