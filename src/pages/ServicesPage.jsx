@@ -9,7 +9,7 @@ const services = [
     title: 'Bridal',
     label: 'Bespoke Bridal Beauty',
     image: '/images/Bridal%20services.JPG',
-    description: 'Your wedding day deserves nothing less than perfection. We craft bespoke bridal looks tailored to your unique features, style, and vision — ensuring you feel radiant, confident, and completely yourself as you walk down the aisle.',
+    description: 'Your wedding day deserves nothing less than perfection. As a luxury bridal makeup artist in Canada, we craft bespoke looks tailored to your unique features, style, and vision — including South Asian bridal hair and makeup — ensuring you feel radiant and completely yourself as you walk down the aisle.',
   },
   {
     title: 'Events',

@@ -41,7 +41,7 @@ export default function Footer() {
               Where Elegance Meets Artistry
             </p>
             <p className="text-[#8A7A70] text-xs leading-relaxed max-w-xs">
-              Luxury hair and makeup artistry for brides, events, and editorial. Based in Canada, serving clients with care, precision, and passion.
+              Luxury bridal hair and makeup artist based in Canada. Specialising in South Asian bridal beauty, weddings, events, and editorial — serving clients with care, precision, and passion.
             </p>
           </div>
 

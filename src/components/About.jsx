@@ -31,7 +31,7 @@ export default function About() {
               In 2024, I fully returned to my passion and founded Arsh Sandhu Allure.
             </p>
             <p className="text-[#3D2E26] text-base leading-relaxed mb-5">
-              Today, I specialise in soft, natural glam and sleek, elegant hairstyling — looks that feel timeless, refined, and effortlessly beautiful. My approach is rooted in enhancing natural features while creating a polished, elevated finish that translates both in person and on camera.
+              Today, I specialise in soft, natural glam and sleek, elegant hairstyling — looks that feel timeless, refined, and effortlessly beautiful. As a luxury makeup artist based in Canada, my approach is rooted in enhancing natural features while creating a polished, elevated finish that translates both in person and on camera.
             </p>
             <p className="text-[#3D2E26] text-base leading-relaxed mb-8">
               For me, this work is more than beauty — it's about how you feel. Every client who sits in my chair is my priority, and my goal is always the same: to make you feel confident, comfortable, and truly yourself.
@@ -58,7 +58,7 @@ export default function About() {
             transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="aspect-[3/4] overflow-hidden sticky top-32"
           >
-            <img src="/images/about%20arsh%20sandhu.jpeg" alt="Arsh Sandhu" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+            <img src="/images/about%20arsh%20sandhu.jpeg" alt="Arsh Sandhu — Luxury Bridal Hair and Makeup Artist in Canada" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
           </motion.div>
 
         </div>
