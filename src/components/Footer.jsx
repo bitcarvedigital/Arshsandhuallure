@@ -88,15 +88,30 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom rule + copyright */}
+        {/* Bottom rule + portal logins + copyright */}
         <div className="flex items-center gap-5 mb-8">
           <div className="flex-1 h-px bg-[#2A2A2A]" />
+        </div>
+        <div className="flex items-center justify-center gap-6 mb-6">
+          <Link
+            to="/portal/login"
+            className="text-[10px] tracking-[0.25em] uppercase text-[#8A7A70] hover:text-gold transition-colors duration-300"
+          >
+            Client Login
+          </Link>
+          <span className="w-1 h-1 bg-gold opacity-50 rotate-45" />
+          <Link
+            to="/admin/login"
+            className="text-[10px] tracking-[0.25em] uppercase text-[#8A7A70] hover:text-gold transition-colors duration-300"
+          >
+            Studio Login
+          </Link>
         </div>
         <p className="text-[#5A4A40] text-[10px] tracking-[0.2em] uppercase text-center">
           &copy; {new Date().getFullYear()} Arsh Sandhu Allure. All rights reserved.
         </p>
         <p className="text-[#3A3A3A] text-[9px] tracking-[0.15em] uppercase text-center mt-3">
-          Powered by Pixelcarve Digital
+          Powered by BitCarve Digital
         </p>
 
       </div>
