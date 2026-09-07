@@ -18,7 +18,7 @@ const WRAP = (heading, bodyHtml, ctaText, ctaUrl) => `
   </div>
 </div>`
 
-export async function sendEmail({ to, subject, heading, bodyHtml, ctaText, ctaUrl }) {
+export async function sendEmail({ to, subject, heading, bodyHtml, ctaText, ctaUrl, attachments }) {
   const key = process.env.RESEND_API_KEY
   const from = process.env.EMAIL_FROM || 'onboarding@resend.dev'
   if (!key) {
@@ -34,6 +34,7 @@ export async function sendEmail({ to, subject, heading, bodyHtml, ctaText, ctaUr
         to: [to],
         subject,
         html: WRAP(heading, bodyHtml, ctaText, ctaUrl),
+        ...(attachments ? { attachments } : {}),
       }),
     })
     if (!resp.ok) {

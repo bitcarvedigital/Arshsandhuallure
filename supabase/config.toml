@@ -412,3 +412,19 @@ enabled = true
 # declarative_schema_path = "./database"
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
+
+# Password-reset (and any other auth) emails go out through Resend from the
+# verified domain, instead of Supabase's rate-limited shared sender.
+# RESEND_API_KEY must be exported when running `supabase start` or `config push`.
+[auth.email.smtp]
+enabled = true
+host = "smtp.resend.com"
+port = 465
+user = "resend"
+pass = "env(RESEND_API_KEY)"
+admin_email = "portal@arshsandhuallure.com"
+sender_name = "Arsh Sandhu Allure"
+
+[auth.email.template.recovery]
+subject = "Reset your Arsh Sandhu Allure portal password"
+content_path = "./supabase/templates/recovery.html"
