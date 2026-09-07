@@ -22,6 +22,12 @@ export function AuthProvider({ mode, children }) {
     if (mode === 'client') {
       const { data } = await supabase.from('clients').select('*').eq('user_id', sess.user.id).maybeSingle()
       setClient(data || null)
+      // an admin who signed in on the client page gets routed to the studio
+      if (data) setIsAdmin(false)
+      else {
+        const { data: adm } = await supabase.rpc('is_admin')
+        setIsAdmin(!!adm)
+      }
     } else {
       const { data } = await supabase.rpc('is_admin')
       setIsAdmin(!!data)
@@ -62,10 +68,11 @@ export function AuthProvider({ mode, children }) {
 }
 
 export function RequireClient({ children }) {
-  const { session, client, loading } = useAuth()
+  const { session, client, isAdmin, loading } = useAuth()
   const location = useLocation()
   if (loading) return <div className="min-h-screen bg-beige"><Spinner /></div>
   if (!session || !client) {
+    if (session && isAdmin) return <Navigate to="/admin" replace />
     return <Navigate to="/portal/login" replace state={{ from: location.pathname }} />
   }
   return children
@@ -74,6 +81,8 @@ export function RequireClient({ children }) {
 export function RequireAdmin({ children }) {
   const { session, isAdmin, loading } = useAuth()
   if (loading) return <div className="min-h-screen bg-beige"><Spinner /></div>
-  if (!session || !isAdmin) return <Navigate to="/admin/login" replace />
+  if (!session) return <Navigate to="/admin/login" replace />
+  // a client who signed in on the studio page gets routed to her portal
+  if (!isAdmin) return <Navigate to="/portal" replace />
   return children
 }

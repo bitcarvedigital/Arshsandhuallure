@@ -1,6 +1,6 @@
 import { supabaseAdmin } from '../_lib/supabaseAdmin.js'
 import { send, methodGuard, getBody } from '../_lib/http.js'
-import { sendEmail } from '../_lib/email.js'
+import { sendEmail, esc } from '../_lib/email.js'
 
 const KIND_LABEL = {
   agreement: 'a signed service agreement',
@@ -25,9 +25,10 @@ export default async function handler(req, res) {
   const admin = supabaseAdmin()
 
   // A wizard submit can enqueue a dozen rows at once (intake + every party
-  // member). Only the first submission in a 2-minute window per client emails.
+  // member). Only the first submission in a 20-second window per client emails;
+  // separate human actions minutes apart still each get their own email.
   // Bulk inserts share one created_at, so ties break on id to pick exactly one.
-  const windowStart = new Date(new Date(record.created_at).getTime() - 2 * 60 * 1000).toISOString()
+  const windowStart = new Date(new Date(record.created_at).getTime() - 20 * 1000).toISOString()
   const { data: earlier } = await admin
     .from('submissions')
     .select('id')
@@ -50,8 +51,8 @@ export default async function handler(req, res) {
     to,
     subject: `New submission from ${client?.full_name || 'a client'}`,
     heading: 'New client submission',
-    bodyHtml: `<p><strong>${client?.full_name || 'A client'}</strong>${
-      client?.event_date ? ` (event ${client.event_date})` : ''
+    bodyHtml: `<p><strong>${esc(client?.full_name || 'A client')}</strong>${
+      client?.event_date ? ` (event ${esc(client.event_date)})` : ''
     } just sent ${KIND_LABEL[record.kind] || 'a submission'}.</p><p>${
       pending || 1
     } item${(pending || 1) === 1 ? '' : 's'} waiting for your review.</p>`,

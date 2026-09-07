@@ -1,7 +1,7 @@
 import { requireAdmin } from '../_lib/auth.js'
 import { send, methodGuard, getBody } from '../_lib/http.js'
 import { generateToken, hashToken } from '../_lib/tokens.js'
-import { sendEmail } from '../_lib/email.js'
+import { sendEmail, esc } from '../_lib/email.js'
 import { str, enumOrNull, SERVICES, isUuid } from '../_lib/validate.js'
 
 function inviteUrl(rawToken) {
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     await sendEmail({
       to: client.email,
       subject: 'Your Arsh Sandhu Allure client portal',
-      heading: `Welcome, ${(client.full_name || '').split(' ')[0]}`,
+      heading: `Welcome, ${esc((client.full_name || '').split(' ')[0])}`,
       bodyHtml:
         '<p>Here is your personal link to set up your client portal, where your agreement, forms, and wedding-day details all live in one place.</p><p>The link is valid for 7 days.</p>',
       ctaText: 'Set Up My Portal',
@@ -92,7 +92,7 @@ export default async function handler(req, res) {
   await sendEmail({
     to: client.email,
     subject: 'Your Arsh Sandhu Allure client portal',
-    heading: `Welcome, ${fullName.split(' ')[0]}`,
+    heading: `Welcome, ${esc(fullName.split(' ')[0])}`,
     bodyHtml:
       '<p>We are so honoured to be part of your day. Your personal client portal is ready — your agreement, forms, and wedding-day details all live there.</p><p>The link below is valid for 7 days.</p>',
     ctaText: 'Set Up My Portal',

@@ -1,3 +1,7 @@
+export function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+}
+
 // Minimal Resend sender (REST via fetch — no SDK). Email is a courtesy
 // notification, never a security gate: missing config logs and moves on.
 
