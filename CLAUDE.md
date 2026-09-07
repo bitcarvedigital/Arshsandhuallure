@@ -28,7 +28,7 @@ PLUS the client/admin portal. Built and maintained by BitCarve Digital.
 
 ## Production ops (learned the hard way)
 - `npx supabase config push` **applies even if you answer "n"** at its prompt — treat every run as live. Prod auth URLs / signup policy live in `supabase/config.toml` `[auth]`; push with `--yes` only after editing deliberately. Never set `[auth.email].enable_signup = false` — that disables email *login*, not just signup.
-- Deploys: `npx vercel deploy --yes --archive=tgz` (preview) → verify → `npx vercel deploy --prod --yes --archive=tgz`. GitHub is not the deploy path.
+- Deploys: **pushing `main` to GitHub builds production automatically** (Vercel Git integration). Workflow: commit → `npx vercel deploy --yes --archive=tgz` for a preview → verify → `git push origin main`. Never push untested work to `main`. GitHub auth = fine-grained PAT in the Mac keychain (expires 2027-09-07).
 - Backups: **automatic** — Vercel cron `/api/cron/backup` every Sunday exports all tables to JSON → private `backups` bucket (last 12) + emails a copy to `app_settings.backup_email`. Manual on-demand: `sh scripts/backup-prod.sh` → `BitCarve-HQ/Backups/`. Neither includes storage photos.
 - Auth emails (password reset) go through Resend SMTP from `portal@arshsandhuallure.com`, configured in `supabase/config.toml` `[auth.email.smtp]` with `pass = env(RESEND_API_KEY)` — **export RESEND_API_KEY before `supabase start` or `config push`** or the CLI fails to parse the config. Reset template: `supabase/templates/recovery.html`.
 - Keep-alive: Vercel cron hits `/api/cron/keepalive` daily (needs `CRON_SECRET`) so the free Supabase project never pauses.
