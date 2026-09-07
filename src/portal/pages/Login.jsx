@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
-import { Field, Btn, ErrorNote, DiamondRule, MicroLabel } from '../../shared/ui'
+import { Field, Btn, ErrorNote, DiamondRule, MicroLabel, PasswordField } from '../../shared/ui'
 
 export default function Login({ admin }) {
   const [email, setEmail] = useState('')
@@ -54,7 +54,7 @@ export default function Login({ admin }) {
         </div>
         <form onSubmit={submit} className="flex flex-col gap-6">
           <Field label="Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" autoComplete="email" />
-          <Field label="Password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" />
+          <PasswordField label="Password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" />
           <ErrorNote>{error}</ErrorNote>
           {notice && <p className="text-gold text-sm">{notice}</p>}
           <Btn type="submit" disabled={busy}>{busy ? 'Signing in…' : 'Sign In'}</Btn>

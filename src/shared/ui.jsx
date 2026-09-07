@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 // Shared portal primitives — mirrors the marketing site's form language
 // (see src/pages/BookingPage.jsx) without importing from it.
 
@@ -38,6 +40,41 @@ export function Field({ label, required, ...props }) {
         {required ? ' *' : ''}
       </label>
       <input className={fieldClass} {...props} />
+    </div>
+  )
+}
+
+function EyeIcon({ open }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z" />
+      <circle cx="12" cy="12" r="3" />
+      {!open && <path d="M4 4l16 16" />}
+    </svg>
+  )
+}
+
+// Password input with a show/hide toggle. Same look as Field.
+export function PasswordField({ label, required, ...props }) {
+  const [show, setShow] = useState(false)
+  return (
+    <div className="flex flex-col gap-2">
+      <label className={labelClass}>
+        {label}
+        {required ? ' *' : ''}
+      </label>
+      <div className="relative">
+        <input type={show ? 'text' : 'password'} className={fieldClass + ' pr-10'} {...props} />
+        <button
+          type="button"
+          onClick={() => setShow((v) => !v)}
+          aria-label={show ? 'Hide password' : 'Show password'}
+          aria-pressed={show}
+          className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-[#8A7A70] hover:text-gold transition-colors cursor-pointer"
+        >
+          <EyeIcon open={show} />
+        </button>
+      </div>
     </div>
   )
 }

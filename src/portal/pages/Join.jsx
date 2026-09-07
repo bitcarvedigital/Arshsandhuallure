@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase, publicFetch } from '../../lib/supabaseClient'
-import { Field, Btn, ErrorNote, DiamondRule, MicroLabel, Spinner } from '../../shared/ui'
+import { Field, Btn, ErrorNote, DiamondRule, MicroLabel, Spinner, PasswordField } from '../../shared/ui'
 
 // Invite registration: email prefilled & read-only, password entered twice.
 export default function Join() {
@@ -70,8 +70,8 @@ export default function Join() {
             </p>
             <form onSubmit={submit} className="flex flex-col gap-6">
               <Field label="Email" value={info.email} disabled />
-              <Field label="Choose a password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
-              <Field label="Confirm password" type="password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
+              <PasswordField label="Choose a password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
+              <PasswordField label="Confirm password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
               <ErrorNote>{error}</ErrorNote>
               <Btn type="submit" disabled={busy}>
                 {busy ? 'Setting up…' : 'Create My Login'}

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
-import { Field, Btn, ErrorNote, DiamondRule, MicroLabel } from '../../shared/ui'
+import { Field, Btn, ErrorNote, DiamondRule, MicroLabel, PasswordField } from '../../shared/ui'
 
 // Landing page for Supabase recovery links (session arrives via the URL hash).
 export default function ResetPassword() {
@@ -40,8 +40,8 @@ export default function ResetPassword() {
           <DiamondRule className="mt-6" />
         </div>
         <form onSubmit={submit} className="flex flex-col gap-6">
-          <Field label="New password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
-          <Field label="Confirm new password" type="password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
+          <PasswordField label="New password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
+          <PasswordField label="Confirm new password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
           <ErrorNote>{error}</ErrorNote>
           <Btn type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save & Sign In'}</Btn>
         </form>

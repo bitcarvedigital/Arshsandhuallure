@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../portal/AuthProvider'
 import { AdminShell } from '../AdminShell'
-import { Field, Btn, ErrorNote, DiamondRule, SectionHeading, MicroLabel } from '../../shared/ui'
+import { Field, Btn, ErrorNote, DiamondRule, SectionHeading, MicroLabel, PasswordField } from '../../shared/ui'
 
 export default function AdminSettings() {
   const { session } = useAuth()
@@ -91,9 +91,9 @@ export default function AdminSettings() {
 
       <form onSubmit={changePassword} className="max-w-md flex flex-col gap-6">
         <MicroLabel>Change your password</MicroLabel>
-        <Field label="Current password" type="password" required value={current} onChange={(e) => setCurrent(e.target.value)} autoComplete="current-password" />
-        <Field label="New password" type="password" required value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" />
-        <Field label="Confirm new password" type="password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
+        <PasswordField label="Current password" required value={current} onChange={(e) => setCurrent(e.target.value)} autoComplete="current-password" />
+        <PasswordField label="New password" required value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" />
+        <PasswordField label="Confirm new password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
         <ErrorNote>{pwErr}</ErrorNote>
         {pwMsg && <p className="text-gold text-sm">{pwMsg}</p>}
         <Btn type="submit" disabled={busy} className="self-start">
