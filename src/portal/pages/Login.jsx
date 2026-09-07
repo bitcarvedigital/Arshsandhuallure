@@ -62,6 +62,17 @@ export default function Login({ admin }) {
             Forgot password?
           </button>
         </form>
+        <div className="mt-10 pt-6 border-t border-[#E0D2C2] text-center">
+          <p className="text-[10px] tracking-[0.25em] uppercase text-[#8A7A70] mb-3">
+            {admin ? 'Not the studio?' : 'Part of the studio?'}
+          </p>
+          <Link
+            to={admin ? '/portal/login' : '/admin/login'}
+            className="inline-block border border-[#A89080] text-dark text-xs tracking-[0.25em] uppercase px-8 py-3 hover:border-gold hover:text-gold transition-colors duration-300"
+          >
+            {admin ? 'Client Login' : 'Studio Login'}
+          </Link>
+        </div>
       </div>
     </div>
   )
