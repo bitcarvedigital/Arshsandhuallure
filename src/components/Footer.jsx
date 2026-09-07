@@ -1,5 +1,9 @@
 import { Link } from 'react-router-dom'
 
+// The portal links only appear once Supabase is configured for this
+// environment, so the marketing site can ship before the portal is wired up.
+const portalReady = Boolean(import.meta.env.VITE_SUPABASE_URL)
+
 const navLinks = [
   { label: 'Services', href: '/services' },
   { label: 'About', href: '/about' },
@@ -92,6 +96,7 @@ export default function Footer() {
         <div className="flex items-center gap-5 mb-8">
           <div className="flex-1 h-px bg-[#2A2A2A]" />
         </div>
+        {portalReady && (
         <div className="flex items-center justify-center gap-6 mb-6">
           <Link
             to="/portal/login"
@@ -107,6 +112,7 @@ export default function Footer() {
             Studio Login
           </Link>
         </div>
+        )}
         <p className="text-[#5A4A40] text-[10px] tracking-[0.2em] uppercase text-center">
           &copy; {new Date().getFullYear()} Arsh Sandhu Allure. All rights reserved.
         </p>
