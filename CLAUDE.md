@@ -26,6 +26,13 @@ PLUS the client/admin portal. Built and maintained by BitCarve Digital.
 - **Env:** client vars are `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`; server-only secrets (`SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `SUBMISSION_WEBHOOK_SECRET`, `EMAIL_FROM`, `APP_BASE_URL`, `SUPABASE_URL`) must NEVER get a `VITE_` prefix. Manage with `vercel env`; local `.env.local`.
 - **Local dev:** `npx supabase start` (Docker) for the backend, `node scripts/dev-api.mjs` for /api on :3999, `npm run dev` for the SPA (vite proxies /api → :3999). Or `vercel dev`.
 
+## Production ops (learned the hard way)
+- `npx supabase config push` **applies even if you answer "n"** at its prompt — treat every run as live. Prod auth URLs / signup policy live in `supabase/config.toml` `[auth]`; push with `--yes` only after editing deliberately. Never set `[auth.email].enable_signup = false` — that disables email *login*, not just signup.
+- Deploys: `npx vercel deploy --yes --archive=tgz` (preview) → verify → `npx vercel deploy --prod --yes --archive=tgz`. GitHub is not the deploy path.
+- Backups: `sh scripts/backup-prod.sh` → `BitCarve-HQ/Backups/` (data only; contains `private_config` secrets — keep local). Free tier has no backups of its own.
+- Keep-alive: Vercel cron hits `/api/cron/keepalive` daily (needs `CRON_SECRET`) so the free Supabase project never pauses.
+- Submission emails: pg_net trigger → `/api/hooks/submission-created`; URL + secret in `private_config` (RLS, no policies). If emails stop, check that table and the Vercel function logs first.
+
 ## Payments
 E-transfer only for now (address in `app_settings.etransfer_email`; Arsh marks received in admin). `payments.stripe_payment_link` is the reserved slot for a future Stripe link — don't build payment processing without Bhagesh.
 
