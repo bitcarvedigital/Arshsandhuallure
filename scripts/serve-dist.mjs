@@ -13,7 +13,8 @@ createServer((req, res) => {
   const url = decodeURIComponent(new URL(req.url, 'http://x').pathname)
   // Vercel-only injected scripts (analytics) don't exist locally — 404 them honestly.
   if (url.startsWith('/_vercel/')) { res.writeHead(404); return res.end() }
-  let file = path.join(dist, url)
+  // Directory index, like Vercel: '/' -> index.html
+  let file = path.join(dist, url === '/' ? 'index.html' : url)
   if (!(existsSync(file) && statSync(file).isFile())) {
     const rule = vercel.rewrites.find((r) => new RegExp(`^${r.source.replace(/\((.*)\)/, '($1)')}$`).test(url))
     file = path.join(dist, rule ? rule.destination : 'index.html')

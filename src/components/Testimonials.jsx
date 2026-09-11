@@ -16,7 +16,7 @@ export default function Testimonials() {
           transition={{ duration: 0.7 }}
           className="text-center mb-16"
         >
-          <p className="text-gold text-[9px] tracking-[0.55em] uppercase mb-4">Client Reviews</p>
+          <p className="text-gold text-[9px] tracking-[0.55em] uppercase mb-4">Testimonials</p>
           <h2 className="font-heading text-4xl md:text-5xl font-normal text-dark tracking-wide">
             Trusted by brides across the GTA
           </h2>
