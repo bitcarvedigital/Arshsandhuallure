@@ -18,6 +18,26 @@ function NavLink({ href, label, onClick, light }) {
   )
 }
 
+const PHONE = 'tel:+14372210004'
+const WHATSAPP = 'https://wa.me/14372210004?text=Hi%20Arsh%2C%20I%27m%20interested%20in%20bridal%20hair%20and%20makeup'
+
+function PhoneIcon({ className }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />
+    </svg>
+  )
+}
+
+function WhatsAppIcon({ className }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M4 20l1.3-3.9A8 8 0 1 1 8.2 19z" />
+      <path d="M9.5 9.5c0 3 2 5 5 5l1-1.5-2-1-1 1a4 4 0 0 1-1.5-1.5l1-1-1-2z" />
+    </svg>
+  )
+}
+
 function InstagramIcon({ className }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -66,6 +86,22 @@ export default function Navbar() {
             aria-label="Instagram"
           >
             <InstagramIcon className="w-[15px] h-[15px]" />
+          </a>
+          <a
+            href={PHONE}
+            className={`transition-colors duration-300 hover:text-gold ${light ? 'text-white/80' : 'text-dark'}`}
+            aria-label="Call Arsh Sandhu Allure, +1 (437) 221-0004"
+          >
+            <PhoneIcon className="w-[15px] h-[15px]" />
+          </a>
+          <a
+            href={WHATSAPP}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`transition-colors duration-300 hover:text-gold ${light ? 'text-white/80' : 'text-dark'}`}
+            aria-label="WhatsApp Arsh Sandhu Allure"
+          >
+            <WhatsAppIcon className="w-[15px] h-[15px]" />
           </a>
         </nav>
 
@@ -119,6 +155,14 @@ export default function Navbar() {
             >
               <InstagramIcon className="w-[15px] h-[15px]" />
               <span className="text-[10px] tracking-widest text-dark/60">@arshsandhuallure</span>
+            </a>
+            <a href={PHONE} className="text-dark hover:text-gold transition-colors duration-300 w-fit flex items-center gap-2.5">
+              <PhoneIcon className="w-[15px] h-[15px]" />
+              <span className="text-[10px] tracking-widest text-dark/60">+1 (437) 221-0004</span>
+            </a>
+            <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="text-dark hover:text-gold transition-colors duration-300 w-fit flex items-center gap-2.5">
+              <WhatsAppIcon className="w-[15px] h-[15px]" />
+              <span className="text-[10px] tracking-widest text-dark/60">WhatsApp us</span>
             </a>
           </motion.div>
         )}
