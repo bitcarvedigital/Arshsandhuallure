@@ -7,7 +7,7 @@ const picks = baseReviews.filter((r) => ['Lilian Roshelle', 'Tiffany Persaud', '
 
 export default function Testimonials() {
   return (
-    <section className="bg-beige py-28 px-6">
+    <section id="testimonials" className="bg-beige py-28 px-6">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -41,7 +41,7 @@ export default function Testimonials() {
               transition={{ duration: 0.8, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
               className="bg-beige-card p-9 flex flex-col"
             >
-              <p className="text-gold text-[10px] tracking-[0.3em] mb-5" aria-label="Five star review">★★★★★</p>
+              <p className="text-gold text-[10px] tracking-[0.3em] mb-5"><span aria-hidden="true">★★★★★</span><span className="sr-only">Five star review</span></p>
               <p className="text-[#3D2E26] text-sm leading-[1.9] italic flex-1">“{r.text}”</p>
               <footer className="flex items-center gap-3 mt-7">
                 <span className="w-1 h-1 bg-gold opacity-70 rotate-45" />
