@@ -21,8 +21,12 @@ export default function ReviewsPage() {
   return (
     <>
       <Helmet>
-        <title>Client Reviews | Arsh Sandhu Allure</title>
-        <meta name="description" content="Read real reviews from brides and clients of Arsh Sandhu Allure. See why clients trust Arsh for their most important beauty moments across Canada." />
+        <title>Client Reviews | Bridal Makeup Artist Mississauga | Arsh Sandhu Allure</title>
+        <meta name="description" content="Read real reviews from brides and clients across Mississauga, Brampton, Toronto and the GTA. See why they trust Arsh Sandhu Allure for their most important beauty moments." />
+        <link rel="canonical" href="https://arshsandhuallure.com/reviews" />
+        <meta property="og:title" content="Client Reviews | Bridal Makeup Artist Mississauga | Arsh Sandhu Allure" />
+        <meta property="og:description" content="Read real reviews from brides and clients across Mississauga, Brampton, Toronto and the GTA. See why they trust Arsh Sandhu Allure for their most important beauty moments." />
+        <meta property="og:url" content="https://arshsandhuallure.com/reviews" />
       </Helmet>
       <Navbar />
       <div>

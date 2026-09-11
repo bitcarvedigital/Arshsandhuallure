@@ -81,6 +81,7 @@ export default function BookingPage() {
   const navigate = useNavigate()
   const [submitted, setSubmitted] = useState(false)
   const [sending, setSending] = useState(false)
+  const [error, setError] = useState('')
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -159,20 +160,31 @@ export default function BookingPage() {
       if (files) Array.from(files).forEach((f) => data.append(fieldName, f))
     })
 
-    await fetch('https://formspree.io/f/mnjobkyy', {
-      method: 'POST',
-      body: data,
-      headers: { Accept: 'application/json' },
-    })
-    setSending(false)
-    setSubmitted(true)
+    setError('')
+    try {
+      const res = await fetch('https://formspree.io/f/mnjobkyy', {
+        method: 'POST',
+        body: data,
+        headers: { Accept: 'application/json' },
+      })
+      if (!res.ok) throw new Error(`Formspree ${res.status}`)
+      setSubmitted(true)
+    } catch {
+      setError('Something went wrong and your request did not send. Please try again, or email arshsandhuallure@gmail.com and we will get right back to you.')
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
     <>
       <Helmet>
-        <title>Book a Consultation | Arsh Sandhu Allure</title>
-        <meta name="description" content="Book your luxury bridal hair and makeup consultation with Arsh Sandhu. Serving brides and clients across Canada for weddings, events, and editorial shoots." />
+        <title>Book a Bridal Hair &amp; Makeup Consultation | Mississauga &amp; GTA | Arsh Sandhu Allure</title>
+        <meta name="description" content="Check your wedding date and book a complimentary consultation with Arsh Sandhu. Bridal hair and makeup for weddings, events and editorial across Mississauga, Brampton, Toronto and the GTA." />
+        <link rel="canonical" href="https://arshsandhuallure.com/book" />
+        <meta property="og:title" content="Book a Bridal Hair &amp; Makeup Consultation | Mississauga &amp; GTA | Arsh Sandhu Allure" />
+        <meta property="og:description" content="Check your wedding date and book a complimentary consultation with Arsh Sandhu. Bridal hair and makeup for weddings, events and editorial across Mississauga, Brampton, Toronto and the GTA." />
+        <meta property="og:url" content="https://arshsandhuallure.com/book" />
       </Helmet>
       <Navbar />
       <section className="bg-beige min-h-screen pt-36 pb-24 px-6">
@@ -536,6 +548,9 @@ export default function BookingPage() {
                     >
                       {sending ? 'Sending…' : 'Submit Request'}
                     </button>
+                    {error && (
+                      <p role="alert" className="mt-5 text-xs leading-relaxed text-[#8A3A2A] max-w-md">{error}</p>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>

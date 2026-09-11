@@ -61,8 +61,12 @@ export default function AboutPage() {
   return (
     <>
       <Helmet>
-        <title>About Arsh Sandhu | Luxury Beauty Artist in Canada</title>
-        <meta name="description" content="Meet Arsh Sandhu — a luxury hair and makeup artist based in Canada with 200+ brides styled and 600+ events served. Precision, passion, and artistry in every look." />
+        <title>About Arsh Sandhu | Bridal Hair &amp; Makeup Artist in Mississauga</title>
+        <meta name="description" content="Meet Arsh Sandhu, a luxury bridal hair and makeup artist based in Mississauga with 200+ brides styled and 600+ events served across the GTA. Precision, passion and artistry in every look." />
+        <link rel="canonical" href="https://arshsandhuallure.com/about" />
+        <meta property="og:title" content="About Arsh Sandhu | Bridal Hair &amp; Makeup Artist in Mississauga" />
+        <meta property="og:description" content="Meet Arsh Sandhu, a luxury bridal hair and makeup artist based in Mississauga with 200+ brides styled and 600+ events served across the GTA. Precision, passion and artistry in every look." />
+        <meta property="og:url" content="https://arshsandhuallure.com/about" />
       </Helmet>
       <Navbar />
       <div>

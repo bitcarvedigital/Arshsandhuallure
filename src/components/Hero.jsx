@@ -27,7 +27,7 @@ export default function Hero() {
           left: 0,
           width: '100%',
           height: '100%',
-          backgroundImage: "url('/images/hero.JPG')",
+          backgroundImage: "url('/images/hero.webp')",
           backgroundSize: 'cover',
           backgroundPosition: 'center center',
           backgroundRepeat: 'no-repeat',
@@ -57,13 +57,13 @@ export default function Hero() {
             <div className="w-8 h-px bg-gold opacity-75" />
           </motion.div>
 
-          <motion.p {...fadeUp(0.2)} className="text-gold text-[9px] tracking-[0.55em] uppercase mb-7">
-            Beauty · Artistry · Luxury
-          </motion.p>
-
-          <motion.h1 {...fadeUp(0.35)} className="font-heading text-5xl md:text-[4.5rem] text-white font-normal leading-[1.15] mb-7 tracking-wide">
-            Where elegance<br />meets artistry
+          <motion.h1 {...fadeUp(0.2)} className="text-gold text-[9px] tracking-[0.55em] uppercase mb-7 font-normal">
+            Bridal Hair &amp; Makeup Artist · Mississauga &amp; the GTA
           </motion.h1>
+
+          <motion.p {...fadeUp(0.35)} className="font-heading text-5xl md:text-[4.5rem] text-white font-normal leading-[1.15] mb-7 tracking-wide">
+            Where elegance<br />meets artistry
+          </motion.p>
 
           <motion.div
             initial={{ opacity: 0 }}
@@ -79,7 +79,8 @@ export default function Hero() {
           >
             Bespoke beauty experiences crafted with precision and passion. From
             intimate bridal moments to high-fashion editorial — every face tells a
-            story, and Arsh Sandhu and her team bring it to life.
+            story, and Arsh Sandhu and her team bring it to life. Based in
+            Mississauga, travelling across Brampton, Toronto, the GTA and beyond.
           </motion.p>
 
           <motion.button

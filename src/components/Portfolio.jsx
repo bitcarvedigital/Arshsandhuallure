@@ -2,16 +2,16 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 
 const baseItems = [
-  { src: '/images/Portfolio%201.jpeg', alt: 'Portfolio 1' },
-  { src: '/images/Portfolio%202.jpeg', alt: 'Portfolio 2' },
-  { src: '/images/Portfolio%203.JPG',  alt: 'Portfolio 3' },
-  { src: '/images/Portfolio%204.JPG',  alt: 'Portfolio 4' },
-  { src: '/images/Portfolio%205.JPG',  alt: 'Portfolio 5' },
-  { src: '/images/Portfolio%206.JPG',  alt: 'Portfolio 6' },
-  { src: '/images/Portfolio%207.jpg',  alt: 'Portfolio 7' },
-  { src: '/images/Portfolio%208.JPG',  alt: 'Portfolio 8' },
-  { src: '/images/Portfolio%209.JPG',  alt: 'Portfolio 9' },
-  { src: '/images/Portfolio%2010.JPG', alt: 'Portfolio 10' },
+  { src: '/images/portfolio-01.webp', alt: 'Editorial beauty look with a red lip and vintage veiled beret by Arsh Sandhu Allure – Mississauga, Ontario', width: 720, height: 1080 },
+  { src: '/images/portfolio-02.webp', alt: 'Evening glam makeup for a night event by Arsh Sandhu Allure – Toronto, Ontario', width: 721, height: 1080 },
+  { src: '/images/portfolio-03.webp', alt: 'Bridesmaid hairstyle with long soft curls and floral pins by Arsh Sandhu Allure – GTA, Ontario', width: 720, height: 1080 },
+  { src: '/images/portfolio-04.webp', alt: 'Bride in a cathedral veil with her bouquet, bridal makeup by Arsh Sandhu Allure – Toronto, Ontario', width: 721, height: 1080 },
+  { src: '/images/portfolio-05.webp', alt: 'Half-up bridal hairstyle with a lace bow, wedding hair by Arsh Sandhu Allure – GTA, Ontario', width: 720, height: 1080 },
+  { src: '/images/portfolio-06.webp', alt: 'Maternity photoshoot hair and makeup by Arsh Sandhu Allure – Mississauga, Ontario', width: 723, height: 1080 },
+  { src: '/images/portfolio-07.webp', alt: 'Bride in a satin ballgown with a soft veil, bridal hair and makeup by Arsh Sandhu Allure – Ontario', width: 720, height: 1080 },
+  { src: '/images/portfolio-08.webp', alt: 'Newlyweds laughing outdoors, bridal updo and makeup by Arsh Sandhu Allure – GTA, Ontario', width: 720, height: 1080 },
+  { src: '/images/portfolio-09.webp', alt: 'Bride with her bridesmaids on a rooftop, bridal party hair and makeup by Arsh Sandhu Allure – Niagara, Ontario', width: 720, height: 1080 },
+  { src: '/images/portfolio-10.webp', alt: 'South Asian bride in an embroidered lehenga and dupatta, bridal makeup by Arsh Sandhu Allure – Mississauga, Ontario', width: 1350, height: 1080 },
 ]
 
 const portfolioItems = [...baseItems, ...baseItems]
@@ -73,6 +73,10 @@ export default function Portfolio() {
               <img
                 src={item.src}
                 alt={item.alt}
+                width={item.width}
+                height={item.height}
+                loading={i < 4 ? 'eager' : 'lazy'}
+                decoding="async"
                 className="w-full h-full object-cover transition-transform duration-700 cursor-pointer hover:scale-110"
               />
             </div>

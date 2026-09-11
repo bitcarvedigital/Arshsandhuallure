@@ -17,8 +17,12 @@ export default function CompanyEthos() {
         className="relative min-h-[50vh] md:min-h-screen overflow-hidden"
       >
         <img
-          src="/images/company%20ethos.jpg"
-          alt="Company Ethos"
+          src="/images/company-ethos.webp"
+          alt="Arsh Sandhu curling a client's long brunette hair in the studio – Mississauga, Ontario"
+          width={934}
+          height={1400}
+          loading="lazy"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover object-center hover:scale-105 transition-transform duration-[1400ms]"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-dark/20 hidden md:block" />

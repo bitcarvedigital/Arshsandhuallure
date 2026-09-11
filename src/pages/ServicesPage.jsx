@@ -8,20 +8,29 @@ const services = [
   {
     title: 'Bridal',
     label: 'Bespoke Bridal Beauty',
-    image: '/images/Bridal%20services.JPG',
-    description: 'Your wedding day deserves nothing less than perfection. As a luxury bridal makeup artist in Canada, we craft bespoke looks tailored to your unique features, style, and vision — including South Asian bridal hair and makeup — ensuring you feel radiant and completely yourself as you walk down the aisle.',
+    image: '/images/bridal-services.webp',
+    alt: 'Smiling bride in a lace gown and veil, bridal hair and makeup by Arsh Sandhu Allure – Mississauga, Ontario',
+    width: 800,
+    height: 1200,
+    description: 'Your wedding day deserves nothing less than perfection. As a luxury bridal hair and makeup artist based in Mississauga and serving the GTA, we craft bespoke looks tailored to your unique features, style, and vision — including South Asian bridal hair and makeup, with dupatta, veil and jewellery setting — ensuring you feel radiant and completely yourself as you walk down the aisle. Every bridal booking begins with a consultation and a trial, so the look is perfected long before the morning of your wedding. We come to you: your home, hotel or venue, anywhere across Mississauga, Brampton, Toronto and beyond.',
   },
   {
     title: 'Events',
     label: 'Special Occasions',
-    image: '/images/event%20services.JPG',
-    description: 'From galas and engagement parties to cultural celebrations and milestone occasions, every event deserves a look as memorable as the moment itself. We bring flawless, long-lasting glam that photographs beautifully under any light.',
+    image: '/images/event-services.webp',
+    alt: 'Couple at a maternity photoshoot, special event hair and makeup by Arsh Sandhu Allure – GTA, Ontario',
+    width: 1031,
+    height: 1200,
+    description: 'From galas and engagement parties to cultural celebrations and milestone occasions, every event deserves a look as memorable as the moment itself. We bring flawless, long-lasting glam that photographs beautifully under any light. Bridesmaids, mothers of the bride and groom, and full bridal parties can be styled together on the day, with hair and makeup timed around your schedule. Engagement, mehndi, sangeet and reception looks are designed to work with your outfit and to last through hours of dancing and photographs.',
   },
   {
     title: 'Editorial',
     label: 'Creative Direction',
-    image: '/images/editorial%20services.jpeg',
-    description: 'Bold, avant-garde, and conceptually driven — editorial beauty is where artistry truly shines. We collaborate with photographers, stylists, and creative directors to produce striking looks that push boundaries and command attention.',
+    image: '/images/editorial-services.webp',
+    alt: 'Editorial beauty look with a red lip and veiled beret by Arsh Sandhu Allure – Toronto, Ontario',
+    width: 800,
+    height: 1200,
+    description: 'Bold, avant-garde, and conceptually driven — editorial beauty is where artistry truly shines. We collaborate with photographers, stylists, and creative directors across Toronto and the GTA to produce striking looks that push boundaries and command attention. From clean beauty campaigns and fashion shoots to maternity sessions and creative portraits, we build the look around the concept, the lighting and the lens, so the final image is exactly what the creative team imagined.',
   },
 ]
 
@@ -49,8 +58,12 @@ export default function ServicesPage() {
   return (
     <>
       <Helmet>
-        <title>Services | Bridal, Events & Editorial Hair and Makeup | Arsh Sandhu Allure</title>
-        <meta name="description" content="Explore luxury hair and makeup services for brides, special events, and editorial shoots. Arsh Sandhu Allure delivers flawless, bespoke beauty across Canada." />
+        <title>Bridal, Event &amp; Editorial Hair and Makeup Services | Mississauga &amp; GTA | Arsh Sandhu Allure</title>
+        <meta name="description" content="Luxury bridal, South Asian bridal, event and editorial hair and makeup in Mississauga, Brampton, Toronto and across the GTA. On-location service, trials and bridal party packages." />
+        <link rel="canonical" href="https://arshsandhuallure.com/services" />
+        <meta property="og:title" content="Bridal, Event &amp; Editorial Hair and Makeup Services | Mississauga &amp; GTA | Arsh Sandhu Allure" />
+        <meta property="og:description" content="Luxury bridal, South Asian bridal, event and editorial hair and makeup in Mississauga, Brampton, Toronto and across the GTA. On-location service, trials and bridal party packages." />
+        <meta property="og:url" content="https://arshsandhuallure.com/services" />
       </Helmet>
       <Navbar />
 
@@ -96,7 +109,11 @@ export default function ServicesPage() {
               <div className="overflow-hidden aspect-[2/3] relative group">
                 <img
                   src={service.image}
-                  alt={service.title}
+                  alt={service.alt}
+                  width={service.width}
+                  height={service.height}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A1A]/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -113,6 +130,43 @@ export default function ServicesPage() {
               </div>
             </motion.div>
           ))}
+        </div>
+      </section>
+
+      {/* Where we work */}
+      <section className="bg-[#EDE5DD] py-24 px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="text-gold text-[9px] tracking-[0.55em] uppercase mb-4"
+          >
+            Where We Work
+          </motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="font-heading text-3xl md:text-4xl font-normal text-dark tracking-wide mb-8"
+          >
+            Mississauga, Brampton, Toronto &amp; the GTA
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="text-sm text-[#4A3828] leading-[1.9]"
+          >
+            Arsh Sandhu Allure is based in Mississauga and works on location across the Greater
+            Toronto Area — Brampton, Toronto, Vaughan, Oakville, Milton and the surrounding
+            communities. As a travel artist, Arsh also takes bridal bookings well beyond the GTA,
+            including destination and out-of-town weddings across Ontario. Wherever your morning
+            begins, we bring the studio to you.
+          </motion.p>
         </div>
       </section>
 

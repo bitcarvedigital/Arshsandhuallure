@@ -26,7 +26,7 @@ export default function Reviews({ onLeaveReview }) {
         className="text-center mb-16 px-6"
       >
         <p className="text-gold text-[9px] tracking-[0.55em] uppercase mb-4">Testimonials</p>
-        <h2 className="font-heading text-5xl font-normal text-dark tracking-wide">Client Reviews</h2>
+        <h1 className="font-heading text-5xl font-normal text-dark tracking-wide">Client Reviews</h1>
         <div className="flex items-center justify-center gap-3 mt-7">
           <div className="w-6 h-px bg-gold opacity-60" />
           <div className="w-1 h-1 bg-gold opacity-60 rotate-45" />

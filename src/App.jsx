@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
@@ -14,7 +14,9 @@ import AboutPage from './pages/AboutPage'
 import BookingPage from './pages/BookingPage'
 import ServicesPage from './pages/ServicesPage'
 import ReviewsPage from './pages/ReviewsPage'
+import MississaugaPage from './pages/MississaugaPage'
 import ScrollToTop from './components/ScrollToTop'
+import StickyCTA from './components/StickyCTA'
 
 // Portal / admin / party live in lazy chunks so the marketing bundle is
 // unaffected. Nothing below may be imported by marketing components.
@@ -36,9 +38,12 @@ function Home() {
   return (
     <>
       <Helmet>
-        <title>Arsh Sandhu Allure | Luxury Bridal Hair & Makeup Artist in Canada</title>
-        <meta name="description" content="Arsh Sandhu Allure offers luxury bridal hair and makeup artistry for weddings, events, and editorial shoots across Canada. Book your complimentary consultation today." />
-        <meta name="keywords" content="bridal makeup artist Canada, South Asian bridal hair makeup, luxury wedding makeup artist, bridal hair stylist Canada, Arsh Sandhu" />
+        <title>Arsh Sandhu Allure | Bridal Hair &amp; Makeup Artist – Mississauga &amp; GTA</title>
+        <meta name="description" content="Luxury bridal hair and makeup artist based in Mississauga, serving Brampton, Toronto and the GTA. South Asian bridal, weddings, events and editorial. Book a complimentary consultation." />
+        <link rel="canonical" href="https://arshsandhuallure.com/" />
+        <meta property="og:title" content="Arsh Sandhu Allure | Bridal Hair &amp; Makeup Artist – Mississauga &amp; GTA" />
+        <meta property="og:description" content="Luxury bridal hair and makeup artist based in Mississauga, serving Brampton, Toronto and the GTA. South Asian bridal, weddings, events and editorial. Book a complimentary consultation." />
+        <meta property="og:url" content="https://arshsandhuallure.com/" />
       </Helmet>
       <Navbar />
       <Hero />
@@ -51,23 +56,43 @@ function Home() {
   )
 }
 
+// Marketing pages that show the mobile call/WhatsApp bar (not /book — the form is the CTA).
+const STICKY_CTA_ROUTES = new Set(['/', '/about', '/services', '/reviews', '/bridal-makeup-artist-mississauga'])
+
+function MarketingExtras() {
+  const { pathname } = useLocation()
+  return STICKY_CTA_ROUTES.has(pathname) ? <StickyCTA /> : null
+}
+
+// The route table, shared by the browser (App) and the build-time prerenderer
+// (src/entry-server.jsx). Keep everything router-dependent in here.
+export function AppRoutes() {
+  return (
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/book" element={<BookingPage />} />
+        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/reviews" element={<ReviewsPage />} />
+        <Route path="/bridal-makeup-artist-mississauga" element={<MississaugaPage />} />
+        <Route path="/portal/*" element={<Suspense fallback={<LazyFallback />}><PortalApp /></Suspense>} />
+        <Route path="/admin/*" element={<Suspense fallback={<LazyFallback />}><AdminApp /></Suspense>} />
+        <Route path="/party/:token/*" element={<Suspense fallback={<LazyFallback />}><PartyApp /></Suspense>} />
+        <Route path="/join/:token" element={<Suspense fallback={<LazyFallback />}><JoinPage /></Suspense>} />
+        <Route path="/privacy" element={<Suspense fallback={<LazyFallback />}><PrivacyPage /></Suspense>} />
+      </Routes>
+      <MarketingExtras />
+    </>
+  )
+}
+
 export default function App() {
   return (
     <>
       <BrowserRouter>
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/book" element={<BookingPage />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/reviews" element={<ReviewsPage />} />
-          <Route path="/portal/*" element={<Suspense fallback={<LazyFallback />}><PortalApp /></Suspense>} />
-          <Route path="/admin/*" element={<Suspense fallback={<LazyFallback />}><AdminApp /></Suspense>} />
-          <Route path="/party/:token/*" element={<Suspense fallback={<LazyFallback />}><PartyApp /></Suspense>} />
-          <Route path="/join/:token" element={<Suspense fallback={<LazyFallback />}><JoinPage /></Suspense>} />
-          <Route path="/privacy" element={<Suspense fallback={<LazyFallback />}><PrivacyPage /></Suspense>} />
-        </Routes>
+        <AppRoutes />
       </BrowserRouter>
       <Analytics />
       <SpeedInsights />

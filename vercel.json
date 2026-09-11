@@ -1,18 +1,89 @@
 {
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }],
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/about",
+      "destination": "/about.html"
+    },
+    {
+      "source": "/services",
+      "destination": "/services.html"
+    },
+    {
+      "source": "/reviews",
+      "destination": "/reviews.html"
+    },
+    {
+      "source": "/book",
+      "destination": "/book.html"
+    },
+    {
+      "source": "/bridal-makeup-artist-mississauga",
+      "destination": "/bridal-makeup-artist-mississauga.html"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/spa.html"
+    }
+  ],
   "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/images/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, stale-while-revalidate=604800"
+        }
+      ]
+    },
+    {
+      "source": "/og-image.jpg",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, stale-while-revalidate=604800"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "geolocation=(), microphone=()" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(), microphone=()"
+        }
       ]
     }
   ],
   "crons": [
-    { "path": "/api/cron/keepalive", "schedule": "0 9 * * *" },
-    { "path": "/api/cron/backup", "schedule": "0 10 * * 0" }
+    {
+      "path": "/api/cron/keepalive",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/backup",
+      "schedule": "0 10 * * 0"
+    }
   ]
 }

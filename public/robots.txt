@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /portal/
+Disallow: /admin/
+Disallow: /party/
+Disallow: /join/
+Disallow: /api/
+
+Sitemap: https://arshsandhuallure.com/sitemap.xml

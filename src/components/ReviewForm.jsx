@@ -8,19 +8,27 @@ export default function ReviewForm() {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', rating: '', message: '', improvement: '', recommend: '' })
   const [submitted, setSubmitted] = useState(false)
   const [sending, setSending] = useState(false)
+  const [error, setError] = useState('')
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSending(true)
-    await fetch('https://formspree.io/f/mreoawvj', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(form),
-    })
-    setSending(false)
-    setSubmitted(true)
+    setError('')
+    try {
+      const res = await fetch('https://formspree.io/f/mreoawvj', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (!res.ok) throw new Error(`Formspree ${res.status}`)
+      setSubmitted(true)
+    } catch {
+      setError('Something went wrong and your review did not send. Please try again or email arshsandhuallure@gmail.com.')
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -110,6 +118,9 @@ export default function ReviewForm() {
               <button type="submit" disabled={sending} className="w-full bg-btn-dark text-beige rounded-full py-4 text-xs tracking-[0.25em] uppercase hover:bg-[#3D342E] transition-colors duration-300 disabled:opacity-60">
                 {sending ? 'Sending…' : 'Submit Review'}
               </button>
+              {error && (
+                <p role="alert" className="mt-4 text-center text-xs leading-relaxed text-[#8A3A2A]">{error}</p>
+              )}
             </motion.form>
           )}
         </AnimatePresence>

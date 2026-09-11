@@ -4,19 +4,28 @@ const services = [
   {
     title: 'Bridal',
     label: 'Bespoke Bridal Beauty',
-    image: '/images/Bridal%20services.JPG',
+    image: '/images/bridal-services.webp',
+    alt: 'Smiling bride in a lace gown and veil, bridal hair and makeup by Arsh Sandhu Allure – Mississauga, Ontario',
+    width: 800,
+    height: 1200,
     description: 'Your wedding day deserves nothing less than perfection. We craft bespoke bridal looks tailored to your unique features, style, and vision — ensuring you feel radiant, confident, and completely yourself as you walk down the aisle.',
   },
   {
     title: 'Events',
     label: 'Special Occasions',
-    image: '/images/event%20services.JPG',
+    image: '/images/event-services.webp',
+    alt: 'Couple at a maternity photoshoot, special event hair and makeup by Arsh Sandhu Allure – GTA, Ontario',
+    width: 1031,
+    height: 1200,
     description: 'From galas and engagement parties to cultural celebrations and milestone occasions, every event deserves a look as memorable as the moment itself. We bring flawless, long-lasting glam that photographs beautifully under any light.',
   },
   {
     title: 'Editorial',
     label: 'Creative Direction',
-    image: '/images/editorial%20services.jpeg',
+    image: '/images/editorial-services.webp',
+    alt: 'Editorial beauty look with a red lip and veiled beret by Arsh Sandhu Allure – Toronto, Ontario',
+    width: 800,
+    height: 1200,
     description: 'Bold, avant-garde, and conceptually driven — editorial beauty is where artistry truly shines. We collaborate with photographers, stylists, and creative directors to produce striking looks that push boundaries and command attention.',
   },
 ]
@@ -69,7 +78,11 @@ export default function Services() {
             <div className="overflow-hidden mb-0 aspect-[2/3] relative group">
               <img
                 src={service.image}
-                alt={service.title}
+                alt={service.alt}
+                width={service.width}
+                height={service.height}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A1A]/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

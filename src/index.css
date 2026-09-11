@@ -44,6 +44,7 @@
 
 .hero-zoom {
   animation: slowZoom 18s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 /* Portfolio soft edge fade */

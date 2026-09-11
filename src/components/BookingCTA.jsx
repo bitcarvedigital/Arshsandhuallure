@@ -1,17 +1,21 @@
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 
 export default function BookingCTA() {
   const navigate = useNavigate()
+  // Decided after mount so the markup is identical on the server and the client.
+  const [fixedBg, setFixedBg] = useState(false)
+  useEffect(() => { setFixedBg(window.innerWidth > 768) }, [])
 
   return (
     <section
       className="relative min-h-screen flex items-center justify-center px-6 overflow-hidden"
       style={{
-        backgroundImage: "url('/images/complimentary%20consultation%20BG.jpg')",
+        backgroundImage: "url('/images/consultation-bg.webp')",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundAttachment: window.innerWidth > 768 ? 'fixed' : 'scroll',
+        backgroundAttachment: fixedBg ? 'fixed' : 'scroll',
       }}
     >
       <div className="absolute inset-0 bg-[#0A0A0A]/60" />

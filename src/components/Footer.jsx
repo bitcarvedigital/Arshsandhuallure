@@ -9,6 +9,7 @@ const navLinks = [
   { label: 'About', href: '/about' },
   { label: 'Reviews', href: '/reviews' },
   { label: 'Book Now', href: '/book' },
+  { label: 'Bridal Makeup Mississauga', href: '/bridal-makeup-artist-mississauga' },
 ]
 
 function InstagramIcon({ className }) {
@@ -23,7 +24,7 @@ function InstagramIcon({ className }) {
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0F0F0F] px-6 pt-20 pb-10">
+    <footer className="bg-[#0F0F0F] px-6 pt-20 pb-24 md:pb-10">
       <div className="max-w-6xl mx-auto">
 
         {/* Top gold rule */}
@@ -45,7 +46,7 @@ export default function Footer() {
               Where Elegance Meets Artistry
             </p>
             <p className="text-[#8A7A70] text-xs leading-relaxed max-w-xs">
-              Luxury bridal hair and makeup artist based in Canada. Specialising in South Asian bridal beauty, weddings, events, and editorial — serving clients with care, precision, and passion.
+              Luxury bridal hair and makeup artist based in Mississauga, Ontario — travelling across Brampton, Toronto, the GTA and beyond. Specialising in South Asian bridal beauty, weddings, events, and editorial — serving clients with care, precision, and passion.
             </p>
           </div>
 
@@ -77,6 +78,20 @@ export default function Footer() {
                 className="text-[#8A7A70] hover:text-gold text-xs tracking-wide transition-colors duration-300"
               >
                 arshsandhuallure@gmail.com
+              </a>
+              <a
+                href="tel:+14372210004"
+                className="text-[#8A7A70] hover:text-gold text-xs tracking-wide transition-colors duration-300"
+              >
+                +1 (437) 221-0004
+              </a>
+              <a
+                href="https://wa.me/14372210004?text=Hi%20Arsh%2C%20I%27m%20interested%20in%20bridal%20hair%20and%20makeup"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#8A7A70] hover:text-gold text-xs tracking-widest transition-colors duration-300 w-fit"
+              >
+                WhatsApp us
               </a>
               <a
                 href="https://www.instagram.com/arshsandhuallure/"
