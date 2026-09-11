@@ -59,10 +59,10 @@ export default function ServicesPage() {
     <>
       <Helmet>
         <title>Bridal, Event &amp; Editorial Hair and Makeup Services | Mississauga &amp; GTA | Arsh Sandhu Allure</title>
-        <meta name="description" content="Luxury bridal, South Asian bridal, event and editorial hair and makeup in Mississauga, Brampton, Toronto and across the GTA. On-location service, trials and bridal party packages." />
+        <meta name="description" content="Bridal, South Asian bridal, event and editorial hair and makeup in Mississauga, Brampton, Toronto and the GTA. On-location, trials, bridal parties." />
         <link rel="canonical" href="https://arshsandhuallure.com/services" />
         <meta property="og:title" content="Bridal, Event &amp; Editorial Hair and Makeup Services | Mississauga &amp; GTA | Arsh Sandhu Allure" />
-        <meta property="og:description" content="Luxury bridal, South Asian bridal, event and editorial hair and makeup in Mississauga, Brampton, Toronto and across the GTA. On-location service, trials and bridal party packages." />
+        <meta property="og:description" content="Bridal, South Asian bridal, event and editorial hair and makeup in Mississauga, Brampton, Toronto and the GTA. On-location, trials, bridal parties." />
         <meta property="og:url" content="https://arshsandhuallure.com/services" />
       </Helmet>
       <Navbar />
@@ -161,8 +161,8 @@ export default function ServicesPage() {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="text-sm text-[#4A3828] leading-[1.9]"
           >
-            Arsh Sandhu Allure is based in Mississauga and works on location across the Greater
-            Toronto Area — Brampton, Toronto, Vaughan, Oakville, Milton and the surrounding
+            Arsh Sandhu Allure is a fully mobile hair and makeup service. Based in Mississauga, Arsh and
+            her team work on location across the Greater Toronto Area — Brampton, Toronto, Vaughan, Oakville, Milton and the surrounding
             communities. As a travel artist, Arsh also takes bridal bookings well beyond the GTA,
             including destination and out-of-town weddings across Ontario. Wherever your morning
             begins, we bring the studio to you.

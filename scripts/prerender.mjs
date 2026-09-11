@@ -1,6 +1,6 @@
 // Writes one static HTML file per marketing route from the SSR bundle.
 // Runs as the last step of `npm run build`; vercel.json maps each route to its file.
-import { readFileSync, writeFileSync, rmSync } from 'node:fs'
+import { readFileSync, writeFileSync, rmSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
@@ -28,11 +28,20 @@ const stripDefaults = (html) =>
     .replace(/^\s*<title[^>]*data-rh="true"[^>]*>.*?<\/title>\r?\n/gm, '')
     .replace(/^\s*<(?:meta|link)\b[^>]*data-rh="true"[^>]*\/?>\r?\n/gm, '')
 
+// Inline the (small) CSS bundle so first paint of a prerendered page waits on
+// nothing but the HTML itself. spa.html keeps the normal <link>.
+const cssFile = readdirSync(path.join(dist, 'assets')).find((f) => /^index-.*\.css$/.test(f))
+if (!cssFile) throw new Error('prerender: css bundle not found')
+const cssText = readFileSync(path.join(dist, 'assets', cssFile), 'utf8')
+const cssLink = new RegExp(`<link rel="stylesheet"[^>]*href="/assets/${cssFile.replace('.', '\\.')}"[^>]*>`)
+if (!cssLink.test(template)) throw new Error('prerender: css <link> not found in template')
+
 let words = {}
 for (const [url, file] of Object.entries(PRERENDER_ROUTES)) {
   const { html, head } = render(url)
   if (!html || !head) throw new Error(`prerender: empty output for ${url}`)
   const out = stripDefaults(template)
+    .replace(cssLink, `<style>${cssText}</style>`)
     .replace('</head>', `    ${head}\n  </head>`)
     .replace('<div id="root"></div>', `<div id="root">${html}</div>`)
   if (!out.includes(`<div id="root">${html}`)) throw new Error(`prerender: root placeholder missing for ${url}`)

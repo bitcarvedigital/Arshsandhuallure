@@ -8,6 +8,7 @@ import Hero from './components/Hero'
 import Portfolio from './components/Portfolio'
 import Services from './components/Services'
 import CompanyEthos from './components/CompanyEthos'
+import Testimonials from './components/Testimonials'
 import BookingCTA from './components/BookingCTA'
 import Footer from './components/Footer'
 import AboutPage from './pages/AboutPage'
@@ -39,16 +40,17 @@ function Home() {
     <>
       <Helmet>
         <title>Arsh Sandhu Allure | Bridal Hair &amp; Makeup Artist – Mississauga &amp; GTA</title>
-        <meta name="description" content="Luxury bridal hair and makeup artist based in Mississauga, serving Brampton, Toronto and the GTA. South Asian bridal, weddings, events and editorial. Book a complimentary consultation." />
+        <meta name="description" content="Mobile luxury bridal hair and makeup artist in Mississauga, serving Brampton, Toronto and the GTA. South Asian bridal, weddings, events and editorial." />
         <link rel="canonical" href="https://arshsandhuallure.com/" />
         <meta property="og:title" content="Arsh Sandhu Allure | Bridal Hair &amp; Makeup Artist – Mississauga &amp; GTA" />
-        <meta property="og:description" content="Luxury bridal hair and makeup artist based in Mississauga, serving Brampton, Toronto and the GTA. South Asian bridal, weddings, events and editorial. Book a complimentary consultation." />
+        <meta property="og:description" content="Mobile luxury bridal hair and makeup artist in Mississauga, serving Brampton, Toronto and the GTA. South Asian bridal, weddings, events and editorial." />
         <meta property="og:url" content="https://arshsandhuallure.com/" />
       </Helmet>
       <Navbar />
       <Hero />
       <Portfolio />
       <Services />
+      <Testimonials />
       <BookingCTA />
       <CompanyEthos />
       <Footer />

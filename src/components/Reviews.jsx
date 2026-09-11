@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 
-const baseReviews = [
+export const baseReviews = [
   { name: 'Nidhi Uppal', text: 'Arsh was incredibly polite, professional, and truly exceptional with the hairstyle she created for me. She was able to accommodate me on short notice and was very punctual as well. The style lasted for days, which honestly exceeded my expectations! I highly recommend her — amazing service and great value.' },
   { name: 'Tiffany Persaud', text: "Arsh was great to work with! She did my bridal hairstyle as well as my mom and sister-in-law and everyone loved working with her. She's super easy to talk to and listened to everyone's hair concerns and requests. In addition to my hairstyling she also set my jewelry, dupatta, and veil — ensuring every piece was set perfectly for my Big Day. She took her time setting every piece so that it looked good and was secure." },
   { name: 'Prabh Sohal', text: '5 stars is not enough! Arsh is a magician. She did my makeup for lohri. I have never felt so beautiful. The airbrush foundation was perfection and the eyeshadow blending was unreal. I got compliments all night long. Thank you for making me feel like the best version of myself!' },

@@ -6,7 +6,7 @@ import Footer from '../components/Footer'
 
 const TITLE = 'Bridal Hair & Makeup Artist in Mississauga | Arsh Sandhu Allure'
 const DESCRIPTION =
-  'Luxury bridal hair and makeup artist in Mississauga. South Asian bridal, bridal party, engagement and mehndi looks, with trials and on-location service across Brampton, Toronto and the GTA.'
+  'Luxury bridal hair and makeup artist in Mississauga. South Asian bridal, bridal party, engagement and mehndi looks, on location across the GTA.'
 
 const fade = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },

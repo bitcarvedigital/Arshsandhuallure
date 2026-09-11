@@ -61,7 +61,7 @@ export default function Hero() {
 
           <p
             className="hero-fade-up text-white/90 font-light leading-[1.9] max-w-md mb-12 text-sm tracking-wide"
-            style={{ animationDelay: '0.6s', textShadow: '0 1px 12px rgba(0,0,0,0.8), 0 0px 40px rgba(0,0,0,0.5)' }}
+            style={{ animationDelay: '0.45s', animationDuration: '0.9s', textShadow: '0 1px 12px rgba(0,0,0,0.8), 0 0px 40px rgba(0,0,0,0.5)' }}
           >
             Bespoke beauty experiences crafted with precision and passion. From
             intimate bridal moments to high-fashion editorial — every face tells a

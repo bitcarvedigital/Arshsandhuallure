@@ -180,10 +180,10 @@ export default function BookingPage() {
     <>
       <Helmet>
         <title>Book a Bridal Hair &amp; Makeup Consultation | Mississauga &amp; GTA | Arsh Sandhu Allure</title>
-        <meta name="description" content="Check your wedding date and book a complimentary consultation with Arsh Sandhu. Bridal hair and makeup for weddings, events and editorial across Mississauga, Brampton, Toronto and the GTA." />
+        <meta name="description" content="Check your wedding date and book a complimentary consultation. Bridal hair and makeup across Mississauga, Brampton, Toronto and the GTA." />
         <link rel="canonical" href="https://arshsandhuallure.com/book" />
         <meta property="og:title" content="Book a Bridal Hair &amp; Makeup Consultation | Mississauga &amp; GTA | Arsh Sandhu Allure" />
-        <meta property="og:description" content="Check your wedding date and book a complimentary consultation with Arsh Sandhu. Bridal hair and makeup for weddings, events and editorial across Mississauga, Brampton, Toronto and the GTA." />
+        <meta property="og:description" content="Check your wedding date and book a complimentary consultation. Bridal hair and makeup across Mississauga, Brampton, Toronto and the GTA." />
         <meta property="og:url" content="https://arshsandhuallure.com/book" />
       </Helmet>
       <Navbar />
