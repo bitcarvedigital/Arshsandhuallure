@@ -47,6 +47,29 @@
   will-change: transform;
 }
 
+/* Hero entrance — CSS so the prerendered text paints before JS loads.
+   Same timing/easing as the previous JS fade-ups. */
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes heroFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes heroRule {
+  from { opacity: 0; transform: scaleX(0); }
+  to   { opacity: 1; transform: scaleX(1); }
+}
+@keyframes heroButton {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: none; }
+}
+.hero-fade-up { animation: heroFadeUp 1.1s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.hero-fade    { animation: heroFade 1s ease both; }
+.hero-rule    { animation: heroRule 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both; }
+.hero-button  { animation: heroButton 1s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
 /* Portfolio soft edge fade */
 .portfolio-fade {
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);

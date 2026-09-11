@@ -1,11 +1,8 @@
-import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 
-const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 28 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 1.1, ease: [0.22, 1, 0.36, 1], delay },
-})
+// The entrance animation is pure CSS (index.css `.hero-*` keyframes, same
+// timing and easing the old JS animation used) so the prerendered hero
+// paints before the JavaScript bundle arrives instead of waiting for it.
 
 export default function Hero() {
   const navigate = useNavigate()
@@ -46,52 +43,39 @@ export default function Hero() {
       >
         <div className="max-w-3xl mx-auto w-full flex flex-col items-center">
 
-          <motion.div
-            initial={{ scaleX: 0, opacity: 0 }}
-            animate={{ scaleX: 1, opacity: 1 }}
-            transition={{ duration: 1.2, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-            className="flex items-center gap-4 mb-8"
-          >
+          <div className="hero-rule flex items-center gap-4 mb-8">
             <div className="w-8 h-px bg-gold opacity-75" />
             <div className="w-1.5 h-1.5 border border-gold opacity-50 rotate-45" />
             <div className="w-8 h-px bg-gold opacity-75" />
-          </motion.div>
+          </div>
 
-          <motion.h1 {...fadeUp(0.2)} className="text-gold text-[9px] tracking-[0.55em] uppercase mb-7 font-normal">
+          <h1 className="hero-fade-up text-gold text-[9px] tracking-[0.55em] uppercase mb-7 font-normal" style={{ animationDelay: '0.2s' }}>
             Bridal Hair &amp; Makeup Artist · Mississauga &amp; the GTA
-          </motion.h1>
+          </h1>
 
-          <motion.p {...fadeUp(0.35)} className="font-heading text-5xl md:text-[4.5rem] text-white font-normal leading-[1.15] mb-7 tracking-wide">
+          <p className="hero-fade-up font-heading text-5xl md:text-[4.5rem] text-white font-normal leading-[1.15] mb-7 tracking-wide" style={{ animationDelay: '0.35s' }}>
             Where elegance<br />meets artistry
-          </motion.p>
+          </p>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="w-12 h-px bg-white/25 mx-auto mb-7"
-          />
+          <div className="hero-fade w-12 h-px bg-white/25 mx-auto mb-7" style={{ animationDelay: '0.5s' }} />
 
-          <motion.p
-            {...fadeUp(0.6)}
-            className="text-white/90 font-light leading-[1.9] max-w-md mb-12 text-sm tracking-wide"
-            style={{ textShadow: '0 1px 12px rgba(0,0,0,0.8), 0 0px 40px rgba(0,0,0,0.5)' }}
+          <p
+            className="hero-fade-up text-white/90 font-light leading-[1.9] max-w-md mb-12 text-sm tracking-wide"
+            style={{ animationDelay: '0.6s', textShadow: '0 1px 12px rgba(0,0,0,0.8), 0 0px 40px rgba(0,0,0,0.5)' }}
           >
             Bespoke beauty experiences crafted with precision and passion. From
             intimate bridal moments to high-fashion editorial — every face tells a
             story, and Arsh Sandhu and her team bring it to life. Based in
             Mississauga, travelling across Brampton, Toronto, the GTA and beyond.
-          </motion.p>
+          </p>
 
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.8 }}
+          <button
             onClick={() => navigate('/book')}
-            className="border border-gold text-gold text-[9px] tracking-[0.4em] uppercase px-14 py-4 hover:bg-gold hover:text-dark transition-colors duration-300 cursor-pointer"
+            style={{ animationDelay: '0.8s' }}
+            className="hero-button border border-gold text-gold text-[9px] tracking-[0.4em] uppercase px-14 py-4 hover:bg-gold hover:text-dark transition-colors duration-300 cursor-pointer"
           >
             Book a Consultation
-          </motion.button>
+          </button>
         </div>
       </div>
 
