@@ -114,9 +114,9 @@ export default function Navbar() {
           onClick={() => setMenuOpen((prev) => !prev)}
           aria-label="Toggle menu"
         >
-          <span className={`block h-px transition-all duration-300 origin-center ${light && !menuOpen ? 'bg-white' : 'bg-dark'} ${menuOpen ? 'w-5 rotate-45 translate-y-[7px]' : 'w-5'}`} />
-          <span className={`block h-px transition-all duration-300 ${light && !menuOpen ? 'bg-white' : 'bg-dark'} ${menuOpen ? 'w-5 opacity-0 scale-x-0' : 'w-4'}`} />
-          <span className={`block h-px transition-all duration-300 origin-center ${light && !menuOpen ? 'bg-white' : 'bg-dark'} ${menuOpen ? 'w-5 -rotate-45 -translate-y-[7px]' : 'w-3'}`} />
+          <span className={`block h-px transition-all duration-300 origin-center ${light ? 'bg-beige' : 'bg-dark'} ${menuOpen ? 'w-5 rotate-45 translate-y-[7px]' : 'w-5'}`} />
+          <span className={`block h-px transition-all duration-300 ${light ? 'bg-beige' : 'bg-dark'} ${menuOpen ? 'w-5 opacity-0 scale-x-0' : 'w-4'}`} />
+          <span className={`block h-px transition-all duration-300 origin-center ${light ? 'bg-beige' : 'bg-dark'} ${menuOpen ? 'w-5 -rotate-45 -translate-y-[7px]' : 'w-3'}`} />
         </button>
       </div>
 
