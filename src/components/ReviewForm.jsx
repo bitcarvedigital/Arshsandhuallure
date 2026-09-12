@@ -119,7 +119,7 @@ export default function ReviewForm() {
                 {sending ? 'Sending…' : 'Submit Review'}
               </button>
               {error && (
-                <p role="alert" className="mt-4 text-center text-xs leading-relaxed text-[#8A3A2A]">{error}</p>
+                <p role="alert" className="mt-4 text-center text-xs leading-relaxed text-gold">{error}</p>
               )}
             </motion.form>
           )}

@@ -89,7 +89,7 @@ export default function Footer() {
                 href="https://wa.me/14372210004?text=Hi%20Arsh%2C%20I%27m%20interested%20in%20bridal%20hair%20and%20makeup"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#8A7A70] hover:text-gold text-xs tracking-widest transition-colors duration-300 w-fit"
+                className="text-[#8A7A70] hover:text-gold text-xs tracking-wide transition-colors duration-300"
               >
                 WhatsApp us
               </a>

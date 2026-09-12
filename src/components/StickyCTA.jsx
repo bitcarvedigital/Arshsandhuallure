@@ -21,7 +21,7 @@ export default function StickyCTA() {
           href={WHATSAPP}
           target="_blank"
           rel="noopener noreferrer"
-          className="py-4 text-center text-[10px] tracking-[0.3em] uppercase text-gold active:bg-[#1A1A1A]"
+          className="py-4 text-center text-[10px] tracking-[0.3em] uppercase text-beige active:bg-[#1A1A1A]"
         >
           WhatsApp us
         </a>

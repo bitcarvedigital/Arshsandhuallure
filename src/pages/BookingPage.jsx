@@ -549,7 +549,7 @@ export default function BookingPage() {
                       {sending ? 'Sending…' : 'Submit Request'}
                     </button>
                     {error && (
-                      <p role="alert" className="mt-5 text-xs leading-relaxed text-[#8A3A2A] max-w-md">{error}</p>
+                      <p role="alert" className="mt-5 text-xs leading-relaxed text-gold max-w-md">{error}</p>
                     )}
                   </motion.div>
                 )}
