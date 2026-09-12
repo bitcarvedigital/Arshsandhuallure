@@ -6,7 +6,7 @@ export default function CompanyEthos() {
   const goToAbout = () => navigate('/about')
 
   return (
-    <section className="min-h-screen bg-dark grid grid-cols-1 md:grid-cols-2">
+    <section className="relative min-h-screen bg-dark grid grid-cols-1 md:grid-cols-2">
 
       {/* Left — image */}
       <motion.div
@@ -14,7 +14,7 @@ export default function CompanyEthos() {
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 1.1, ease: 'easeOut' }}
-        className="relative min-h-[50vh] md:min-h-screen overflow-hidden"
+        className="absolute inset-0 md:relative md:inset-auto md:min-h-screen overflow-hidden"
       >
         <img
           src="/images/company-ethos.webp"
@@ -26,6 +26,8 @@ export default function CompanyEthos() {
           className="absolute inset-0 w-full h-full object-cover object-center hover:scale-105 transition-transform duration-[1400ms]"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-dark/20 hidden md:block" />
+        {/* Phones stack the columns, so the text sits over its own photo instead of the photo floating between two dark blocks */}
+        <div className="absolute inset-0 bg-dark/80 md:hidden" />
       </motion.div>
 
       {/* Right — text */}
@@ -34,7 +36,7 @@ export default function CompanyEthos() {
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-        className="flex flex-col justify-center px-12 py-24 md:px-16 lg:px-20"
+        className="relative flex flex-col justify-center px-12 py-24 md:px-16 lg:px-20"
       >
         <div className="flex items-center gap-3 mb-7">
           <div className="w-5 h-px bg-gold opacity-70" />

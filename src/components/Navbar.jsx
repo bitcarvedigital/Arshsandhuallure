@@ -131,18 +131,6 @@ export default function Navbar() {
             transition={{ duration: 0.22 }}
             className="md:hidden bg-[#EDE5DD] border-t border-[#C8B8AC] px-8 pt-8 pb-12 flex flex-col gap-7 relative"
           >
-            {/* Close button */}
-            <button
-              onClick={() => setMenuOpen(false)}
-              aria-label="Close menu"
-              className="absolute top-5 right-8 w-8 h-8 flex items-center justify-center text-dark hover:text-gold transition-colors duration-300"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <line x1="1" y1="1" x2="15" y2="15" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                <line x1="15" y1="1" x2="1" y2="15" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-              </svg>
-            </button>
-
             {navLinks.map((link) => (
               <NavLink key={link.label} href={link.href} label={link.label} light={false} onClick={() => setMenuOpen(false)} />
             ))}
