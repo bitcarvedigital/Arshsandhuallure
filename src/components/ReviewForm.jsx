@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { trackEvent } from './track'
+import { rules, validate, focusFirstError } from './formValidation'
 
 const inputClass = 'w-full border border-[#B8A090] bg-transparent rounded-lg px-5 py-3.5 text-sm text-dark placeholder-[#8A7060] focus:outline-none focus:border-gold transition-colors duration-200'
 const labelClass = 'block text-xs tracking-widest uppercase text-[#5A4030] mb-2'
@@ -11,11 +12,26 @@ export default function ReviewForm() {
   const [submitted, setSubmitted] = useState(false)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
+  const [errors, setErrors] = useState({})
+  const RULES = { firstName: rules.name, lastName: rules.name, email: rules.email, rating: rules.required, message: rules.minLength(10) }
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setForm({ ...form, [name]: value })
+    if (errors[name]) setErrors((prev) => { const next = { ...prev }; delete next[name]; return next })
+  }
+  const handleBlur = (e) => {
+    const { name, value } = e.target
+    if (!RULES[name]) return
+    const msg = RULES[name](value)
+    setErrors((prev) => { const next = { ...prev }; if (msg) next[name] = msg; else delete next[name]; return next })
+  }
+  const FieldError = ({ name }) => (errors[name] ? <p role="alert" className="text-[11px] leading-relaxed text-gold mt-2">{errors[name]}</p> : null)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const errs = validate(form, RULES)
+    if (Object.keys(errs).length) { setErrors(errs); setError('Please check the highlighted fields.'); focusFirstError(e.currentTarget, errs); return }
     setSending(true)
     setError('')
     try {
@@ -53,20 +69,23 @@ export default function ReviewForm() {
               <p className="text-[#5A4030] text-sm leading-relaxed">It will be reviewed and published shortly.</p>
             </motion.div>
           ) : (
-            <motion.form key="form" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} onSubmit={handleSubmit}>
+            <motion.form key="form" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} onSubmit={handleSubmit} onBlur={handleBlur} noValidate>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                 <div>
                   <label className={labelClass}>First Name *</label>
-                  <input type="text" name="firstName" required placeholder="Arsh" value={form.firstName} onChange={handleChange} className={inputClass} />
+                  <input type="text" name="firstName" required autoComplete="given-name" aria-invalid={!!errors.firstName} placeholder="Arsh" value={form.firstName} onChange={handleChange} className={inputClass} />
+                  <FieldError name="firstName" />
                 </div>
                 <div>
                   <label className={labelClass}>Last Name *</label>
-                  <input type="text" name="lastName" required placeholder="Sandhu" value={form.lastName} onChange={handleChange} className={inputClass} />
+                  <input type="text" name="lastName" required autoComplete="family-name" aria-invalid={!!errors.lastName} placeholder="Sandhu" value={form.lastName} onChange={handleChange} className={inputClass} />
+                  <FieldError name="lastName" />
                 </div>
               </div>
               <div className="mb-6">
                 <label className={labelClass}>Email *</label>
-                <input type="email" name="email" required placeholder="you@example.com" value={form.email} onChange={handleChange} className={inputClass} />
+                <input type="email" name="email" required inputMode="email" autoComplete="email" aria-invalid={!!errors.email} placeholder="you@example.com" value={form.email} onChange={handleChange} className={inputClass} />
+                <FieldError name="email" />
               </div>
               <div className="mb-6">
                 <label className={labelClass}>Rating *</label>
@@ -78,10 +97,12 @@ export default function ReviewForm() {
                   <option value="2">⭐⭐ — 2 Stars</option>
                   <option value="1">⭐ — 1 Star</option>
                 </select>
+                <FieldError name="rating" />
               </div>
               <div className="mb-6">
                 <label className={labelClass}>Your Review *</label>
                 <textarea name="message" required rows={5} placeholder="Share your experience..." value={form.message} onChange={handleChange} className={inputClass + ' resize-none'} />
+                <FieldError name="message" />
               </div>
 
               <AnimatePresence>

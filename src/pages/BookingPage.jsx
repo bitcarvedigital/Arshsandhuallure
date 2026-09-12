@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import { trackEvent } from '../components/track'
+import { rules, formatPhone, todayISO, validate, focusFirstError } from '../components/formValidation'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
@@ -84,6 +85,7 @@ export default function BookingPage() {
   const [submitted, setSubmitted] = useState(false)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
+  const [errors, setErrors] = useState({})
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -130,8 +132,45 @@ export default function BookingPage() {
   const [moodBoardFiles, setMoodBoardFiles] = useState(null)
 
   const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+    const { name, value } = e.target
+    setForm((prev) => ({ ...prev, [name]: value }))
+    if (errors[name]) setErrors((prev) => { const next = { ...prev }; delete next[name]; return next })
   }
+
+  // Which fields must be valid depends on the service chosen.
+  const activeRules = (f) => {
+    const base = { firstName: rules.name, lastName: rules.name, phone: rules.phone, email: rules.email, service: rules.required }
+    const counts = { hairServicesCount: rules.count(0), makeupServicesCount: rules.count(0) }
+    const byService = {
+      Bridal: { brideName: rules.name, weddingDate: rules.futureDate, weddingLocation: rules.text, readyTime: rules.time, ...counts },
+      Events: { eventDate: rules.futureDate, readyTime: rules.time, eventLocation: rules.text, ...counts },
+      Editorial: { projectBrandName: rules.text, projectRole: rules.required, shootDate: rules.futureDate, shootCallTime: rules.time, shootLocation: rules.text, modelCount: rules.count(1) },
+      Other: { serviceTypeRequested: rules.text, otherBookingDate: rules.futureDate, otherReadyTime: rules.time, otherLocation: rules.text },
+    }
+    return { ...base, ...(byService[f.service] || {}) }
+  }
+
+  const validateAll = (f) => {
+    const errs = validate(f, activeRules(f))
+    if ((f.service === 'Bridal' || f.service === 'Events') && !errs.hairServicesCount && !errs.makeupServicesCount
+        && Number(f.hairServicesCount) + Number(f.makeupServicesCount) === 0) {
+      errs.makeupServicesCount = 'Enter at least one hair or makeup service.'
+    }
+    return errs
+  }
+
+  // One blur handler on the <form>: validate whichever field was just left.
+  const handleBlur = (e) => {
+    const { name, value } = e.target
+    if (!name) return
+    const rule = activeRules(form)[name]
+    if (!rule) return
+    if (name === 'phone' && !rules.phone(value)) setForm((prev) => ({ ...prev, phone: formatPhone(value) }))
+    const msg = rule(value)
+    setErrors((prev) => { const next = { ...prev }; if (msg) next[name] = msg; else delete next[name]; return next })
+  }
+
+  const FieldError = ({ name }) => (errors[name] ? <p role="alert" className="text-[11px] leading-relaxed text-gold -mt-1">{errors[name]}</p> : null)
 
   const makeToggler = (key) => (value) => {
     setForm((prev) => ({
@@ -144,6 +183,13 @@ export default function BookingPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const errs = validateAll(form)
+    if (Object.keys(errs).length) {
+      setErrors(errs)
+      setError('Please check the highlighted fields.')
+      focusFirstError(e.currentTarget, errs)
+      return
+    }
     setSending(true)
 
     const data = new FormData()
@@ -272,28 +318,34 @@ export default function BookingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
               onSubmit={handleSubmit}
+              onBlur={handleBlur}
+              noValidate
               className="flex flex-col gap-6"
             >
               {/* ── CONTACT INFO — always visible ── */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                   <label className={labelClass}>First Name *</label>
-                  <input type="text" name="firstName" required value={form.firstName} onChange={handleChange} placeholder="First name" className={fieldClass} />
+                  <input type="text" name="firstName" required aria-invalid={!!errors.firstName} autoComplete="given-name" value={form.firstName} onChange={handleChange} placeholder="First name" className={fieldClass} />
+                  <FieldError name="firstName" />
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className={labelClass}>Last Name *</label>
-                  <input type="text" name="lastName" required value={form.lastName} onChange={handleChange} placeholder="Last name" className={fieldClass} />
+                  <input type="text" name="lastName" required aria-invalid={!!errors.lastName} autoComplete="family-name" value={form.lastName} onChange={handleChange} placeholder="Last name" className={fieldClass} />
+                  <FieldError name="lastName" />
                 </div>
               </div>
 
               <div className="flex flex-col gap-2">
                 <label className={labelClass}>Phone *</label>
-                <input type="tel" name="phone" required value={form.phone} onChange={handleChange} placeholder="+1 (000) 000-0000" className={fieldClass} />
+                <input type="tel" name="phone" required aria-invalid={!!errors.phone} inputMode="tel" autoComplete="tel" value={form.phone} onChange={handleChange} placeholder="+1 (000) 000-0000" className={fieldClass} />
+                <FieldError name="phone" />
               </div>
 
               <div className="flex flex-col gap-2">
                 <label className={labelClass}>Email *</label>
-                <input type="email" name="email" required value={form.email} onChange={handleChange} placeholder="your@email.com" className={fieldClass} />
+                <input type="email" name="email" required aria-invalid={!!errors.email} inputMode="email" autoComplete="email" value={form.email} onChange={handleChange} placeholder="your@email.com" className={fieldClass} />
+                <FieldError name="email" />
               </div>
 
               <div className="flex flex-col gap-2">
@@ -302,6 +354,7 @@ export default function BookingPage() {
                   <option value="" disabled>Select a service</option>
                   {services.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
+                <FieldError name="service" />
               </div>
 
               {/* ── BRIDAL ── */}
@@ -312,33 +365,39 @@ export default function BookingPage() {
 
                     <motion.div custom={0} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col gap-2">
                       <label className={labelClass}>Bride's Name *</label>
-                      <input type="text" name="brideName" required value={form.brideName} onChange={handleChange} placeholder="Full name of the bride" className={fieldClass} />
+                      <input type="text" name="brideName" required aria-invalid={!!errors.brideName} value={form.brideName} onChange={handleChange} placeholder="Full name of the bride" className={fieldClass} />
+                      <FieldError name="brideName" />
                     </motion.div>
 
                     <motion.div custom={1} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col gap-2">
                       <label className={labelClass}>Date of Wedding *</label>
-                      <input type="date" name="weddingDate" required value={form.weddingDate} onChange={handleChange} className={fieldClass} />
+                      <input type="date" name="weddingDate" required aria-invalid={!!errors.weddingDate} min={todayISO()} value={form.weddingDate} onChange={handleChange} className={fieldClass} />
+                      <FieldError name="weddingDate" />
                     </motion.div>
 
                     <motion.div custom={2} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col gap-2">
                       <label className={labelClass}>Location of Wedding *</label>
-                      <input type="text" name="weddingLocation" required value={form.weddingLocation} onChange={handleChange} placeholder="Venue name or city" className={fieldClass} />
+                      <input type="text" name="weddingLocation" required aria-invalid={!!errors.weddingLocation} value={form.weddingLocation} onChange={handleChange} placeholder="Venue name or city" className={fieldClass} />
+                      <FieldError name="weddingLocation" />
                     </motion.div>
 
                     <motion.div custom={3} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col gap-2">
                       <label className={labelClass}>Ready Time *</label>
-                      <input type="time" name="readyTime" required value={form.readyTime} onChange={handleChange} className={fieldClass} />
+                      <input type="time" name="readyTime" required aria-invalid={!!errors.readyTime} value={form.readyTime} onChange={handleChange} className={fieldClass} />
+                      <FieldError name="readyTime" />
                       <span className="text-[10px] text-[#7A6355] tracking-wide">The time you need to be ready by</span>
                     </motion.div>
 
                     <motion.div custom={4} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-2">
                         <label className={labelClass}>No. of Hair Services *</label>
-                        <input type="number" name="hairServicesCount" required min="0" value={form.hairServicesCount} onChange={handleChange} placeholder="e.g. 4" className={fieldClass} />
+                        <input type="number" name="hairServicesCount" required aria-invalid={!!errors.hairServicesCount} min="0" value={form.hairServicesCount} onChange={handleChange} placeholder="e.g. 4" className={fieldClass} />
+                        <FieldError name="hairServicesCount" />
                       </div>
                       <div className="flex flex-col gap-2">
                         <label className={labelClass}>No. of Makeup Services *</label>
-                        <input type="number" name="makeupServicesCount" required min="0" value={form.makeupServicesCount} onChange={handleChange} placeholder="e.g. 4" className={fieldClass} />
+                        <input type="number" name="makeupServicesCount" required aria-invalid={!!errors.makeupServicesCount} min="0" value={form.makeupServicesCount} onChange={handleChange} placeholder="e.g. 4" className={fieldClass} />
+                        <FieldError name="makeupServicesCount" />
                       </div>
                     </motion.div>
 
@@ -378,28 +437,33 @@ export default function BookingPage() {
 
                     <motion.div custom={0} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col gap-2">
                       <label className={labelClass}>Event Date *</label>
-                      <input type="date" name="eventDate" required value={form.eventDate} onChange={handleChange} className={fieldClass} />
+                      <input type="date" name="eventDate" required aria-invalid={!!errors.eventDate} min={todayISO()} value={form.eventDate} onChange={handleChange} className={fieldClass} />
+                      <FieldError name="eventDate" />
                     </motion.div>
 
                     <motion.div custom={1} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col gap-2">
                       <label className={labelClass}>Ready Time *</label>
-                      <input type="time" name="readyTime" required value={form.readyTime} onChange={handleChange} className={fieldClass} />
+                      <input type="time" name="readyTime" required aria-invalid={!!errors.readyTime} value={form.readyTime} onChange={handleChange} className={fieldClass} />
+                      <FieldError name="readyTime" />
                       <span className="text-[10px] text-[#7A6355] tracking-wide">The time you need to be ready by</span>
                     </motion.div>
 
                     <motion.div custom={2} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col gap-2">
                       <label className={labelClass}>Event Location *</label>
-                      <input type="text" name="eventLocation" required value={form.eventLocation} onChange={handleChange} placeholder="Venue name or city" className={fieldClass} />
+                      <input type="text" name="eventLocation" required aria-invalid={!!errors.eventLocation} value={form.eventLocation} onChange={handleChange} placeholder="Venue name or city" className={fieldClass} />
+                      <FieldError name="eventLocation" />
                     </motion.div>
 
                     <motion.div custom={3} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-2">
                         <label className={labelClass}>No. of Hair Services *</label>
-                        <input type="number" name="hairServicesCount" required min="0" value={form.hairServicesCount} onChange={handleChange} placeholder="e.g. 4" className={fieldClass} />
+                        <input type="number" name="hairServicesCount" required aria-invalid={!!errors.hairServicesCount} min="0" value={form.hairServicesCount} onChange={handleChange} placeholder="e.g. 4" className={fieldClass} />
+                        <FieldError name="hairServicesCount" />
                       </div>
                       <div className="flex flex-col gap-2">
                         <label className={labelClass}>No. of Makeup Services *</label>
-                        <input type="number" name="makeupServicesCount" required min="0" value={form.makeupServicesCount} onChange={handleChange} placeholder="e.g. 4" className={fieldClass} />
+                        <input type="number" name="makeupServicesCount" required aria-invalid={!!errors.makeupServicesCount} min="0" value={form.makeupServicesCount} onChange={handleChange} placeholder="e.g. 4" className={fieldClass} />
+                        <FieldError name="makeupServicesCount" />
                       </div>
                     </motion.div>
 
@@ -431,7 +495,8 @@ export default function BookingPage() {
                     <motion.div custom={0} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col gap-2">
                       <label className={labelClass}>Project / Brand Name *</label>
                       <p className="text-[10px] text-[#7A6355] tracking-wide -mt-1">Please share the name of the brand, publication, or project.</p>
-                      <input type="text" name="projectBrandName" required value={form.projectBrandName} onChange={handleChange} placeholder="Brand or project name" className={fieldClass + ' mt-1'} />
+                      <input type="text" name="projectBrandName" required aria-invalid={!!errors.projectBrandName} value={form.projectBrandName} onChange={handleChange} placeholder="Brand or project name" className={fieldClass + ' mt-1'} />
+                      <FieldError name="projectBrandName" />
                     </motion.div>
 
                     <motion.div custom={1} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col gap-2">
@@ -440,16 +505,19 @@ export default function BookingPage() {
                         <option value="" disabled>Select your role</option>
                         {editorialRoles.map((r) => <option key={r} value={r}>{r}</option>)}
                       </select>
+                      <FieldError name="projectRole" />
                     </motion.div>
 
                     <motion.div custom={2} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-2">
                         <label className={labelClass}>Shoot Date *</label>
-                        <input type="date" name="shootDate" required value={form.shootDate} onChange={handleChange} className={fieldClass} />
+                        <input type="date" name="shootDate" required aria-invalid={!!errors.shootDate} min={todayISO()} value={form.shootDate} onChange={handleChange} className={fieldClass} />
+                        <FieldError name="shootDate" />
                       </div>
                       <div className="flex flex-col gap-2">
                         <label className={labelClass}>Call Time *</label>
-                        <input type="time" name="shootCallTime" required value={form.shootCallTime} onChange={handleChange} className={fieldClass} />
+                        <input type="time" name="shootCallTime" required aria-invalid={!!errors.shootCallTime} value={form.shootCallTime} onChange={handleChange} className={fieldClass} />
+                        <FieldError name="shootCallTime" />
                       </div>
                     </motion.div>
                     <span className="text-[10px] text-[#7A6355] tracking-wide -mt-4">When should the artist(s) be ready on set?</span>
@@ -457,13 +525,15 @@ export default function BookingPage() {
                     <motion.div custom={3} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col gap-2">
                       <label className={labelClass}>Shoot Location *</label>
                       <p className="text-[10px] text-[#7A6355] tracking-wide -mt-1">Please include full address or studio name.</p>
-                      <input type="text" name="shootLocation" required value={form.shootLocation} onChange={handleChange} placeholder="Full address or studio name" className={fieldClass + ' mt-1'} />
+                      <input type="text" name="shootLocation" required aria-invalid={!!errors.shootLocation} value={form.shootLocation} onChange={handleChange} placeholder="Full address or studio name" className={fieldClass + ' mt-1'} />
+                      <FieldError name="shootLocation" />
                     </motion.div>
 
                     <motion.div custom={4} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col gap-2">
                       <label className={labelClass}>Number of Models / Talent *</label>
                       <p className="text-[10px] text-[#7A6355] tracking-wide -mt-1">How many individuals will require services?</p>
-                      <input type="number" name="modelCount" required min="1" value={form.modelCount} onChange={handleChange} placeholder="e.g. 3" className={fieldClass + ' mt-1'} />
+                      <input type="number" name="modelCount" required aria-invalid={!!errors.modelCount} min="1" value={form.modelCount} onChange={handleChange} placeholder="e.g. 3" className={fieldClass + ' mt-1'} />
+                      <FieldError name="modelCount" />
                     </motion.div>
 
                     <motion.div custom={5} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col gap-3">
@@ -497,17 +567,20 @@ export default function BookingPage() {
                     <motion.div custom={0} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col gap-2">
                       <label className={labelClass}>Type of Service Requested *</label>
                       <p className="text-[10px] text-[#7A6355] tracking-wide -mt-1">Please describe the nature of your request.</p>
-                      <input type="text" name="serviceTypeRequested" required value={form.serviceTypeRequested} onChange={handleChange} placeholder="e.g. Quinceanera, Prom, Photoshoot…" className={fieldClass + ' mt-1'} />
+                      <input type="text" name="serviceTypeRequested" required aria-invalid={!!errors.serviceTypeRequested} value={form.serviceTypeRequested} onChange={handleChange} placeholder="e.g. Quinceanera, Prom, Photoshoot…" className={fieldClass + ' mt-1'} />
+                      <FieldError name="serviceTypeRequested" />
                     </motion.div>
 
                     <motion.div custom={1} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-2">
                         <label className={labelClass}>Booking Date *</label>
-                        <input type="date" name="otherBookingDate" required value={form.otherBookingDate} onChange={handleChange} className={fieldClass} />
+                        <input type="date" name="otherBookingDate" required aria-invalid={!!errors.otherBookingDate} min={todayISO()} value={form.otherBookingDate} onChange={handleChange} className={fieldClass} />
+                        <FieldError name="otherBookingDate" />
                       </div>
                       <div className="flex flex-col gap-2">
                         <label className={labelClass}>Ready Time *</label>
-                        <input type="time" name="otherReadyTime" required value={form.otherReadyTime} onChange={handleChange} className={fieldClass} />
+                        <input type="time" name="otherReadyTime" required aria-invalid={!!errors.otherReadyTime} value={form.otherReadyTime} onChange={handleChange} className={fieldClass} />
+                        <FieldError name="otherReadyTime" />
                       </div>
                     </motion.div>
                     <span className="text-[10px] text-[#7A6355] tracking-wide -mt-4">When would you like services to be completed?</span>
@@ -515,7 +588,8 @@ export default function BookingPage() {
                     <motion.div custom={2} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col gap-2">
                       <label className={labelClass}>Service Location *</label>
                       <p className="text-[10px] text-[#7A6355] tracking-wide -mt-1">Kindly provide the full address.</p>
-                      <input type="text" name="otherLocation" required value={form.otherLocation} onChange={handleChange} placeholder="Full address or venue name" className={fieldClass + ' mt-1'} />
+                      <input type="text" name="otherLocation" required aria-invalid={!!errors.otherLocation} value={form.otherLocation} onChange={handleChange} placeholder="Full address or venue name" className={fieldClass + ' mt-1'} />
+                      <FieldError name="otherLocation" />
                     </motion.div>
 
                     <motion.div custom={3} variants={fieldVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col gap-3">
