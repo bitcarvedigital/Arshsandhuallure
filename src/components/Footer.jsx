@@ -42,7 +42,7 @@ export default function Footer() {
             <span className="font-heading text-2xl text-beige tracking-widest block mb-3">
               Arsh Sandhu Allure
             </span>
-            <p className="text-gold text-[9px] tracking-[0.4em] uppercase mb-6">
+            <p className="text-[#B08A5A] text-[9px] tracking-[0.4em] uppercase mb-6">
               Where Elegance Meets Artistry
             </p>
             <p className="text-[#8A7A70] text-xs leading-relaxed max-w-xs">
@@ -52,7 +52,7 @@ export default function Footer() {
 
           {/* Navigation */}
           <div>
-            <p className="text-[8px] tracking-[0.45em] uppercase text-[#6A5A50] mb-6">Navigation</p>
+            <p className="text-[8px] tracking-[0.45em] uppercase text-[#A08E82] mb-6">Navigation</p>
             <nav className="flex flex-col gap-4">
               {navLinks.map((link) => (
                 <Link
@@ -68,9 +68,9 @@ export default function Footer() {
 
           {/* Contact & Social */}
           <div>
-            <p className="text-[8px] tracking-[0.45em] uppercase text-[#6A5A50] mb-6">Connect</p>
+            <p className="text-[8px] tracking-[0.45em] uppercase text-[#A08E82] mb-6">Connect</p>
             <div className="flex flex-col gap-4">
-              <p className="text-[9px] tracking-[0.35em] uppercase text-[#7A6A60] mb-1">
+              <p className="text-[9px] tracking-[0.35em] uppercase text-[#A08E82] mb-1">
                 Bridal &nbsp;·&nbsp; Events &nbsp;·&nbsp; Editorial
               </p>
               <a
@@ -128,10 +128,10 @@ export default function Footer() {
           </Link>
         </div>
         )}
-        <p className="text-[#5A4A40] text-[10px] tracking-[0.2em] uppercase text-center">
+        <p className="text-[#A08E82] text-[10px] tracking-[0.2em] uppercase text-center">
           &copy; {new Date().getFullYear()} Arsh Sandhu Allure. All rights reserved.
         </p>
-        <p className="text-[#3A3A3A] text-[9px] tracking-[0.15em] uppercase text-center mt-3">
+        <p className="text-[#8A8A8A] text-[9px] tracking-[0.15em] uppercase text-center mt-3">
           Powered by BitCarve Digital
         </p>
 
