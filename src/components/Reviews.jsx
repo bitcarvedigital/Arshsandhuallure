@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { trackInquiry } from './track'
+
+export const GOOGLE_REVIEW_URL = 'https://g.page/r/CS0dsEMKNIDgEBM/review'
 
 export const baseReviews = [
   { name: 'Nidhi Uppal', text: 'Arsh was incredibly polite, professional, and truly exceptional with the hairstyle she created for me. She was able to accommodate me on short notice and was very punctual as well. The style lasted for days, which honestly exceeded my expectations! I highly recommend her — amazing service and great value.' },
@@ -68,13 +71,22 @@ export default function Reviews({ onLeaveReview }) {
       </div>
 
       {/* Leave a Review CTA */}
-      <div className="text-center mt-16 px-6">
+      <div className="mt-16 px-6 flex flex-col sm:flex-row items-center justify-center gap-6">
         <button
           onClick={onLeaveReview}
           className="border border-dark text-dark text-[9px] tracking-[0.4em] uppercase px-12 py-3.5 hover:border-gold hover:text-gold transition-colors duration-300 cursor-pointer"
         >
           Leave a Review
         </button>
+        <a
+          href={GOOGLE_REVIEW_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => trackInquiry('google_review', 'reviews_page')}
+          className="text-[9px] tracking-[0.4em] uppercase text-gold hover:text-dark transition-colors duration-300"
+        >
+          Review us on Google
+        </a>
       </div>
 
     </section>
