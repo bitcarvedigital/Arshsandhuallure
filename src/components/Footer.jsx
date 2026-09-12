@@ -32,9 +32,9 @@ export default function Footer() {
 
         {/* Top gold rule */}
         <div className="flex items-center gap-5 mb-16">
-          <div className="flex-1 h-px bg-gold opacity-55" />
-          <div className="w-1 h-1 bg-gold opacity-70 rotate-45" />
-          <div className="flex-1 h-px bg-gold opacity-55" />
+          <div className="flex-1 h-px bg-gold-light" />
+          <div className="w-1 h-1 bg-gold-light rotate-45" />
+          <div className="flex-1 h-px bg-gold-light" />
         </div>
 
         {/* Main footer grid */}
@@ -45,7 +45,7 @@ export default function Footer() {
             <span className="font-heading text-2xl text-beige tracking-widest block mb-3">
               Arsh Sandhu Allure
             </span>
-            <p className="text-[#B08A5A] text-[9px] tracking-[0.4em] uppercase mb-6">
+            <p className="text-gold-light text-[9px] tracking-[0.4em] uppercase mb-6">
               Where Elegance Meets Artistry
             </p>
             <p className="text-[#8A7A70] text-xs leading-relaxed max-w-xs">
@@ -61,7 +61,7 @@ export default function Footer() {
                 <Link
                   key={link.label}
                   to={link.href}
-                  className="text-[10px] tracking-[0.2em] uppercase text-[#8A7A70] hover:text-gold transition-colors duration-300 w-fit"
+                  className="text-[10px] tracking-[0.2em] uppercase text-[#8A7A70] hover:text-gold-light transition-colors duration-300 w-fit"
                 >
                   {link.label}
                 </Link>
@@ -79,14 +79,14 @@ export default function Footer() {
               <a
                 href="mailto:arshsandhuallure@gmail.com"
                 onClick={() => trackInquiry('email', 'footer')}
-                className="text-[#8A7A70] hover:text-gold text-xs tracking-wide transition-colors duration-300"
+                className="text-[#8A7A70] hover:text-gold-light text-xs tracking-wide transition-colors duration-300"
               >
                 arshsandhuallure@gmail.com
               </a>
               <a
                 href="tel:+14372210004"
                 onClick={() => trackInquiry('phone', 'footer')}
-                className="text-[#8A7A70] hover:text-gold text-xs tracking-wide transition-colors duration-300"
+                className="text-[#8A7A70] hover:text-gold-light text-xs tracking-wide transition-colors duration-300"
               >
                 +1 (437) 221-0004
               </a>
@@ -95,7 +95,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => trackInquiry('whatsapp', 'footer')}
-                className="text-[#8A7A70] hover:text-gold text-xs tracking-wide transition-colors duration-300"
+                className="text-[#8A7A70] hover:text-gold-light text-xs tracking-wide transition-colors duration-300"
               >
                 WhatsApp us
               </a>
@@ -103,7 +103,7 @@ export default function Footer() {
                 href={GOOGLE_PROFILE}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#8A7A70] hover:text-gold text-xs tracking-wide transition-colors duration-300"
+                className="text-[#8A7A70] hover:text-gold-light text-xs tracking-wide transition-colors duration-300"
               >
                 Find us on Google
               </a>
@@ -112,7 +112,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
-                className="text-[#8A7A70] hover:text-gold transition-colors duration-300 flex items-center gap-2.5 w-fit"
+                className="text-[#8A7A70] hover:text-gold-light transition-colors duration-300 flex items-center gap-2.5 w-fit"
               >
                 <InstagramIcon className="w-4 h-4" />
                 <span className="text-xs tracking-widest">@arshsandhuallure</span>
@@ -129,14 +129,14 @@ export default function Footer() {
         <div className="flex items-center justify-center gap-6 mb-6">
           <Link
             to="/portal/login"
-            className="text-[10px] tracking-[0.25em] uppercase text-[#8A7A70] hover:text-gold transition-colors duration-300"
+            className="text-[10px] tracking-[0.25em] uppercase text-[#8A7A70] hover:text-gold-light transition-colors duration-300"
           >
             Client Login
           </Link>
-          <span className="w-1 h-1 bg-gold opacity-50 rotate-45" />
+          <span className="w-1 h-1 bg-gold-light rotate-45" />
           <Link
             to="/admin/login"
-            className="text-[10px] tracking-[0.25em] uppercase text-[#8A7A70] hover:text-gold transition-colors duration-300"
+            className="text-[10px] tracking-[0.25em] uppercase text-[#8A7A70] hover:text-gold-light transition-colors duration-300"
           >
             Studio Login
           </Link>

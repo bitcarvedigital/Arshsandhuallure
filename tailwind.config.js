@@ -12,6 +12,7 @@ export default {
         'beige-dark': '#EDE3DB',
         'beige-card': '#EAE0D6',
         gold: '#7A5A32',
+        'gold-light': '#B08A5A', // gold for dark surfaces: passes contrast where #7A5A32 does not
         dark: '#1A1A1A',
         'btn-dark': '#2B2521',
       },
