@@ -1,4 +1,7 @@
 import { Link } from 'react-router-dom'
+import { trackInquiry } from './track'
+
+const GOOGLE_PROFILE = 'https://www.google.com/maps?cid=16176987080204754221'
 
 // The portal links only appear once Supabase is configured for this
 // environment, so the marketing site can ship before the portal is wired up.
@@ -75,12 +78,14 @@ export default function Footer() {
               </p>
               <a
                 href="mailto:arshsandhuallure@gmail.com"
+                onClick={() => trackInquiry('email', 'footer')}
                 className="text-[#8A7A70] hover:text-gold text-xs tracking-wide transition-colors duration-300"
               >
                 arshsandhuallure@gmail.com
               </a>
               <a
                 href="tel:+14372210004"
+                onClick={() => trackInquiry('phone', 'footer')}
                 className="text-[#8A7A70] hover:text-gold text-xs tracking-wide transition-colors duration-300"
               >
                 +1 (437) 221-0004
@@ -89,9 +94,18 @@ export default function Footer() {
                 href="https://wa.me/14372210004?text=Hi%20Arsh%2C%20I%27m%20interested%20in%20bridal%20hair%20and%20makeup"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackInquiry('whatsapp', 'footer')}
                 className="text-[#8A7A70] hover:text-gold text-xs tracking-wide transition-colors duration-300"
               >
                 WhatsApp us
+              </a>
+              <a
+                href={GOOGLE_PROFILE}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#8A7A70] hover:text-gold text-xs tracking-wide transition-colors duration-300"
+              >
+                Find us on Google
               </a>
               <a
                 href="https://www.instagram.com/arshsandhuallure/"

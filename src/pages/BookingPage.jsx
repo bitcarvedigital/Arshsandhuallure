@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
+import { Link } from 'react-router-dom'
+import { trackEvent } from '../components/track'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
@@ -168,6 +170,7 @@ export default function BookingPage() {
         headers: { Accept: 'application/json' },
       })
       if (!res.ok) throw new Error(`Formspree ${res.status}`)
+      trackEvent('booking_submitted', { service: form.service })
       setSubmitted(true)
     } catch {
       setError('Something went wrong and your request did not send. Please try again, or email arshsandhuallure@gmail.com and we will get right back to you.')
@@ -541,6 +544,11 @@ export default function BookingPage() {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.4 }}
                   >
+                    <p className="text-[11px] leading-relaxed text-[#7A6355] max-w-md mt-2">
+                      By sending this request you agree to our{' '}
+                      <Link to="/privacy" className="underline underline-offset-2 hover:text-gold transition-colors duration-300">privacy policy</Link>.
+                      Your details and any photos are used only to plan your booking and are never shared.
+                    </p>
                     <button
                       type="submit"
                       disabled={sending}

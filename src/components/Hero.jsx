@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { trackInquiry } from './track'
 
 // The entrance animation is pure CSS (index.css `.hero-*` keyframes, same
 // timing and easing the old JS animation used) so the prerendered hero
@@ -70,7 +71,7 @@ export default function Hero() {
           </p>
 
           <button
-            onClick={() => navigate('/book')}
+            onClick={() => { trackInquiry('book', 'hero'); navigate('/book') }}
             style={{ animationDelay: '0.8s' }}
             className="hero-button border border-gold text-gold text-[9px] tracking-[0.4em] uppercase px-14 py-4 hover:bg-gold hover:text-dark transition-colors duration-300 cursor-pointer"
           >

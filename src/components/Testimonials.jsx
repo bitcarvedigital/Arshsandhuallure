@@ -61,6 +61,10 @@ export default function Testimonials() {
           <Link to="/reviews" className="text-[10px] tracking-[0.3em] uppercase text-gold hover:text-dark transition-colors duration-300">
             Read all client reviews
           </Link>
+          <span className="inline-block w-1 h-1 bg-gold opacity-60 rotate-45 mx-5 align-middle" />
+          <a href="https://www.google.com/maps?cid=16176987080204754221" target="_blank" rel="noopener noreferrer" className="text-[10px] tracking-[0.3em] uppercase text-gold hover:text-dark transition-colors duration-300">
+            See us on Google
+          </a>
         </motion.p>
       </div>
     </section>

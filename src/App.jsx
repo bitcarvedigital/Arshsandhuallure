@@ -16,6 +16,7 @@ import BookingPage from './pages/BookingPage'
 import ServicesPage from './pages/ServicesPage'
 import ReviewsPage from './pages/ReviewsPage'
 import MississaugaPage from './pages/MississaugaPage'
+import NotFoundPage from './pages/NotFoundPage'
 import ScrollToTop from './components/ScrollToTop'
 import StickyCTA from './components/StickyCTA'
 
@@ -84,6 +85,7 @@ export function AppRoutes() {
         <Route path="/party/:token/*" element={<Suspense fallback={<LazyFallback />}><PartyApp /></Suspense>} />
         <Route path="/join/:token" element={<Suspense fallback={<LazyFallback />}><JoinPage /></Suspense>} />
         <Route path="/privacy" element={<Suspense fallback={<LazyFallback />}><PrivacyPage /></Suspense>} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <MarketingExtras />
     </>

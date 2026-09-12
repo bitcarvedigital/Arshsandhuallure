@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { trackInquiry } from './track'
 
 const WHATSAPP = 'https://wa.me/14372210004?text=Hi%20Arsh%2C%20I%27m%20interested%20in%20bridal%20hair%20and%20makeup'
 
@@ -13,6 +14,7 @@ export default function StickyCTA() {
       <div className="grid grid-cols-2">
         <Link
           to="/book"
+          onClick={() => trackInquiry('book', 'sticky_bar')}
           className="py-4 text-center text-[10px] tracking-[0.3em] uppercase text-beige border-r border-gold/30 active:bg-[#1A1A1A]"
         >
           Check my date
@@ -21,6 +23,7 @@ export default function StickyCTA() {
           href={WHATSAPP}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackInquiry('whatsapp', 'sticky_bar')}
           className="py-4 text-center text-[10px] tracking-[0.3em] uppercase text-beige active:bg-[#1A1A1A]"
         >
           WhatsApp us

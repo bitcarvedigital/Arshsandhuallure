@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { trackInquiry } from './track'
 
 export default function BookingCTA() {
   const navigate = useNavigate()
@@ -79,7 +80,7 @@ export default function BookingCTA() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.35 }}
-          onClick={() => navigate('/book')}
+          onClick={() => { trackInquiry('book', 'home_cta'); navigate('/book') }}
           className="border border-gold text-gold text-[9px] tracking-[0.4em] uppercase px-14 py-4 hover:bg-gold hover:text-dark transition-colors duration-300 cursor-pointer"
         >
           Book Now

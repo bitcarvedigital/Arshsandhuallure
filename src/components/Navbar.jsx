@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Link, useLocation } from 'react-router-dom'
+import { trackInquiry } from './track'
 
 const navLinks = [
   { label: 'Services', href: '/services' },
@@ -89,6 +90,7 @@ export default function Navbar() {
           </a>
           <a
             href={PHONE}
+            onClick={() => trackInquiry('phone', 'header')}
             className={`transition-colors duration-300 hover:text-gold ${light ? 'text-white/80' : 'text-dark'}`}
             aria-label="Call Arsh Sandhu Allure, +1 (437) 221-0004"
           >
@@ -98,6 +100,7 @@ export default function Navbar() {
             href={WHATSAPP}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackInquiry('whatsapp', 'header')}
             className={`transition-colors duration-300 hover:text-gold ${light ? 'text-white/80' : 'text-dark'}`}
             aria-label="WhatsApp Arsh Sandhu Allure"
           >
@@ -156,11 +159,11 @@ export default function Navbar() {
               <InstagramIcon className="w-[15px] h-[15px]" />
               <span className="text-[10px] tracking-widest text-dark/60">@arshsandhuallure</span>
             </a>
-            <a href={PHONE} className="text-dark hover:text-gold transition-colors duration-300 w-fit flex items-center gap-2.5">
+            <a href={PHONE} onClick={() => trackInquiry('phone', 'mobile_menu')} className="text-dark hover:text-gold transition-colors duration-300 w-fit flex items-center gap-2.5">
               <PhoneIcon className="w-[15px] h-[15px]" />
               <span className="text-[10px] tracking-widest text-dark/60">+1 (437) 221-0004</span>
             </a>
-            <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="text-dark hover:text-gold transition-colors duration-300 w-fit flex items-center gap-2.5">
+            <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" onClick={() => trackInquiry('whatsapp', 'mobile_menu')} className="text-dark hover:text-gold transition-colors duration-300 w-fit flex items-center gap-2.5">
               <WhatsAppIcon className="w-[15px] h-[15px]" />
               <span className="text-[10px] tracking-widest text-dark/60">WhatsApp us</span>
             </a>

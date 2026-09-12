@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import { trackEvent } from './track'
 
 const inputClass = 'w-full border border-[#B8A090] bg-transparent rounded-lg px-5 py-3.5 text-sm text-dark placeholder-[#8A7060] focus:outline-none focus:border-gold transition-colors duration-200'
 const labelClass = 'block text-xs tracking-widest uppercase text-[#5A4030] mb-2'
@@ -23,6 +25,7 @@ export default function ReviewForm() {
         body: JSON.stringify(form),
       })
       if (!res.ok) throw new Error(`Formspree ${res.status}`)
+      trackEvent('review_submitted')
       setSubmitted(true)
     } catch {
       setError('Something went wrong and your review did not send. Please try again or email arshsandhuallure@gmail.com.')
@@ -115,6 +118,11 @@ export default function ReviewForm() {
                   <option value="notsure">Not sure</option>
                 </select>
               </div>
+              <p className="text-[11px] leading-relaxed text-[#5A4030] mb-5">
+                By submitting you agree to our{' '}
+                <Link to="/privacy" className="underline underline-offset-2 hover:text-gold transition-colors duration-300">privacy policy</Link>.
+                Your name may appear with your review; your email is never published.
+              </p>
               <button type="submit" disabled={sending} className="w-full bg-btn-dark text-beige rounded-full py-4 text-xs tracking-[0.25em] uppercase hover:bg-[#3D342E] transition-colors duration-300 disabled:opacity-60">
                 {sending ? 'Sending…' : 'Submit Review'}
               </button>

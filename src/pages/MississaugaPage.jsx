@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import { trackInquiry } from '../components/track'
 
 const TITLE = 'Bridal Hair & Makeup Artist in Mississauga | Arsh Sandhu Allure'
 const DESCRIPTION =
@@ -153,7 +154,7 @@ export default function MississaugaPage() {
           </motion.p>
           <motion.div {...fade(0.3)} className="flex flex-col sm:flex-row items-center justify-center gap-5">
             <button
-              onClick={() => navigate('/book')}
+              onClick={() => { trackInquiry('book', 'mississauga_cta'); navigate('/book') }}
               className="border border-gold text-gold text-[9px] tracking-[0.4em] uppercase px-14 py-4 hover:bg-gold hover:text-dark transition-colors duration-300 cursor-pointer"
             >
               Check My Date
@@ -162,6 +163,7 @@ export default function MississaugaPage() {
               href="https://wa.me/14372210004?text=Hi%20Arsh%2C%20I%27m%20interested%20in%20bridal%20hair%20and%20makeup"
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackInquiry('whatsapp', 'mississauga_cta')}
               className="text-[9px] tracking-[0.4em] uppercase text-white/80 hover:text-gold transition-colors duration-300 py-4"
             >
               WhatsApp +1 (437) 221-0004
