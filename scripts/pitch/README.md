@@ -1,6 +1,6 @@
 # Portal pitch deck generator
 
-Regenerates `docs/Client-Portal-Proposal-Kristen.pdf` from the live portal code
+Regenerates `docs/Client-Portal-Proposal.pdf` from the live portal code
 using a mocked Supabase backend (no Docker, no credentials, demo data only).
 
 ```sh

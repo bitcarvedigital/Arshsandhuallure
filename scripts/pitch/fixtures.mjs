@@ -165,7 +165,7 @@ export function makeDb() {
       created_at: iso('2026-08-01T00:00:00Z'),
       body: {
         intro:
-          'This Service Agreement ("Agreement") is entered into between Arsh Sandhu Allure ("Artist") and the undersigned client ("Client") for the provision of professional hair and/or makeup services on the date(s) indicated below.',
+          'This Service Agreement ("Agreement") is entered into between Belle Rose Artistry ("Artist") and the undersigned client ("Client") for the provision of professional hair and/or makeup services on the date(s) indicated below.',
         sections: [
           { n: 1, title: 'Booking & Retainer Fee', body: 'A non-refundable retainer fee of 30% of the total service fee is required to confirm your booking. Your date will not be secured until the retainer has been received. The retainer is applied toward the final balance of your service.' },
           { n: 2, title: 'Travel & Accommodation', body: "A travel fee, based on the distance from the Artist's location to the service location, is added to the final invoice. For events that require the Artist to travel beyond the Greater Toronto Area, all travel and accommodation arrangements and costs are the responsibility of the Client." },
@@ -339,10 +339,10 @@ export function makeDb() {
       updated_at: iso('2026-09-15T14:00:00Z'),
       content: {
         entries: [
-          { time: '6:30 – 7:45 am', artist: 'Arsh', person: 'Priya (Bride)', service: 'Makeup' },
-          { time: '7:45 – 9:00 am', artist: 'Arsh', person: 'Priya (Bride)', service: 'Hair' },
-          { time: '9:00 – 9:45 am', artist: 'Arsh', person: 'Meera (Mom)', service: 'Makeup' },
-          { time: '9:45 – 10:45 am', artist: 'Arsh', person: 'Anjali (MOH)', service: 'Hair & Makeup' },
+          { time: '6:30 – 7:45 am', artist: 'Rose (Lead Artist)', person: 'Priya (Bride)', service: 'Makeup' },
+          { time: '7:45 – 9:00 am', artist: 'Rose (Lead Artist)', person: 'Priya (Bride)', service: 'Hair' },
+          { time: '9:00 – 9:45 am', artist: 'Rose (Lead Artist)', person: 'Meera (Mom)', service: 'Makeup' },
+          { time: '9:45 – 10:45 am', artist: 'Rose (Lead Artist)', person: 'Anjali (MOH)', service: 'Hair & Makeup' },
           { time: '6:30 – 7:30 am', artist: 'Navjot (Assistant)', person: 'Chloe', service: 'Hair' },
           { time: '7:30 – 8:30 am', artist: 'Navjot (Assistant)', person: 'Sana', service: 'Hair & Makeup' },
           { time: '8:30 – 9:30 am', artist: 'Navjot (Assistant)', person: 'Riya', service: 'Hair & Makeup' },
@@ -370,8 +370,8 @@ export function makeDb() {
   ]
 
   db.app_settings = [
-    { key: 'etransfer_email', value: 'pay@arshsandhuallure.com', updated_at: iso(NOW) },
-    { key: 'notification_email', value: 'hello@arshsandhuallure.com', updated_at: iso(NOW) },
+    { key: 'etransfer_email', value: 'pay@bellerose.example', updated_at: iso(NOW) },
+    { key: 'notification_email', value: 'hello@bellerose.example', updated_at: iso(NOW) },
     { key: 'current_terms_version', value: '1', updated_at: iso(NOW) },
   ]
 

@@ -225,7 +225,7 @@ export function attachMock(context, state) {
     if (p.endsWith('/api/party/upload-url')) return json({ path: 'x/y/z.jpg', token: 'demo' })
     if (p.endsWith('/api/party/submit')) return json({ ok: true })
     if (p.endsWith('/api/admin/create-client')) {
-      return json({ clientId: 'c1c1c1c1-0000-4000-8000-000000000002', inviteUrl: 'https://arshsandhuallure.com/join/Zt7Qm2VbKd9RxL4nHs8WcPy3AgEu1JfT' })
+      return json({ clientId: 'c1c1c1c1-0000-4000-8000-000000000002', inviteUrl: 'https://bellerose.example/join/Zt7Qm2VbKd9RxL4nHs8WcPy3AgEu1JfT' })
     }
     if (p.endsWith('/api/sign-agreement')) return json({ agreement: db.agreements[0] })
     return json({ error: 'not mocked' }, 404)

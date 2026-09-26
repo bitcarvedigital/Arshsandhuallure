@@ -12,7 +12,7 @@ async function ratio(name) {
 
 const SHOTS = resolve('../../.pitch/shots')
 const OUT_HTML = resolve('../../.pitch/pitch.html')
-const OUT_PDF = resolve('../../docs/Client-Portal-Proposal-Kristen.pdf')
+const OUT_PDF = resolve('../../docs/Client-Portal-Proposal.pdf')
 mkdirSync(resolve('../../docs'), { recursive: true })
 
 const img = (name) => `file://${SHOTS}/${name}.png`
@@ -195,9 +195,9 @@ const pages = []
 
 /* Page 1 — add-ons */
 pages.push(`<section class="page">
-  <div class="eyebrow">Prepared by BitCarve Digital · For Kristen</div>
+  <div class="eyebrow">Prepared by BitCarve Digital</div>
   <h1 class="cover-title">Your own client &amp; admin portal</h1>
-  <p class="kicker" style="margin-top:.08in">Every screen in this document is from a portal we built and run for a bridal hair &amp; makeup artist in the GTA. It is the starting point, not the finished product: your version is shaped around how <em>you</em> work. This first page lists what we can add, change, or leave out.</p>
+  <p class="kicker" style="margin-top:.08in">Every screen in this document is from a live portal we built for a bridal hair &amp; makeup artist in the GTA, shown under a placeholder studio name. It is the starting point, not the finished product: your version is shaped around how <em>you</em> work. This page lists what we can add, change, or leave out.</p>
   <div class="rule" style="margin:.12in 0"></div>
   <div class="eyebrow" style="margin-bottom:.04in">Made yours, in every build</div>
   <div class="cols" style="margin-bottom:.04in">
@@ -421,7 +421,7 @@ pages.push(
     title: 'One form for the event, her look and her party',
     intro: 'Event details, her own profile and everyone being styled, in a form that saves as she types. She submits when she is ready.',
     images: [
-      { src: 'client-intake-draft', cap: 'Her intake while editing: event details, her profile card, party list, and "Submit to Arsh".' },
+      { src: 'client-intake-draft', cap: 'Her intake while editing: event details, her profile card, party list, and the submit button.' },
       { src: 'phone-intake', cap: 'On her phone.', phone: true, flex: 0.5 },
     ],
     notes: [
@@ -681,14 +681,14 @@ pages.push(`<section class="page">
         <li><b>4 · A test run.</b> You play the bride on your phone, we adjust wording and order until it feels like you.</li>
         <li><b>5 · Launch, then care.</b> We stay on hand for tweaks, keep backups running, and add the add-ons when you are ready.</li>
       </ul>
-      <div class="band" style="margin-top:.25in"><b>A note on the screens in this document.</b><p>They are from the live portal we built for Arsh Sandhu Allure, shown with demo names and placeholder photos. Your portal would carry your brand, your terms and your wording from the first screen to the last.</p></div>
+      <div class="band" style="margin-top:.25in"><b>A note on the screens in this document.</b><p>They are from a live portal we built for a bridal hair &amp; makeup artist in the GTA, shown under a placeholder studio name with demo clients and placeholder photos. Your portal would carry your brand, your terms and your wording from the first screen to the last.</p></div>
       <div class="band" style="margin-top:.14in;background:var(--warm)"><b>BitCarve Digital</b><p>Web design and custom portals for independent businesses, Greater Toronto Area.</p></div>
     </div>
   </div>
   ${foot('Next steps')}
 </section>`)
 
-const html = `<!doctype html><html><head><meta charset="utf-8"><title>Client &amp; Admin Portal — Proposal for Kristen</title><style>${CSS}</style></head><body>${pages.join('\n')}</body></html>`
+const html = `<!doctype html><html><head><meta charset="utf-8"><title>Client &amp; Admin Portal — Proposal</title><style>${CSS}</style></head><body>${pages.join('\n')}</body></html>`
 writeFileSync(OUT_HTML, html)
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', proxy: { server: process.env.HTTPS_PROXY, bypass: '127.0.0.1,localhost' } })

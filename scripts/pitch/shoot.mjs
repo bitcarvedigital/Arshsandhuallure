@@ -34,9 +34,36 @@ async function newCtx({ persona, viewport = DESKTOP, db = makeDb(), session = tr
   return { context, page, state }
 }
 
+// Replace the real studio's name and contact details with a placeholder brand
+// so the deck can be sent to anyone.
+const REPLACEMENTS = [
+  ['Arsh Sandhu Allure', 'Belle Rose Artistry'],
+  ['arshsandhuallure@gmail.com', 'hello@bellerose.example'],
+  ['@arshsandhuallure', '@belleroseartistry'],
+  ['arshsandhuallure.com', 'bellerose.example'],
+  ['+1 (437) 221-0004', '+1 (000) 000-0000'],
+  ['Where Elegance Meets Artistry', 'Beauty, Crafted Around You'],
+  ['Arsh', 'Belle Rose'],
+]
+async function genericize(page) {
+  await page.evaluate((reps) => {
+    const fix = (t) => reps.reduce((acc, [a, b]) => acc.split(a).join(b), t)
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+    const nodes = []
+    while (walker.nextNode()) nodes.push(walker.currentNode)
+    for (const n of nodes) { const v = fix(n.nodeValue); if (v !== n.nodeValue) n.nodeValue = v }
+    for (const el of document.querySelectorAll('input, textarea')) {
+      if (el.value) { const v = fix(el.value); if (v !== el.value) el.value = v }
+      if (el.placeholder) el.placeholder = fix(el.placeholder)
+    }
+  }, REPLACEMENTS)
+}
+
 async function shot(page, name, { fullPage = true, settle = 1400 } = {}) {
   await page.waitForLoadState('networkidle').catch(() => {})
   await page.waitForTimeout(settle)
+  await genericize(page)
+  await page.waitForTimeout(150)
   await page.screenshot({ path: `${OUT}/${name}.png`, fullPage })
   console.log('✓', name)
 }
@@ -246,13 +273,13 @@ async function go(page, path) {
   const WRAP = (heading, bodyHtml, ctaText, ctaUrl) => `
 <div style="background:#F5EFEA;padding:40px 16px;font-family:Georgia,'Times New Roman',serif;color:#1A1A1A;">
   <div style="max-width:520px;margin:0 auto;background:#FFFFFF;padding:40px 32px;">
-    <p style="text-align:center;letter-spacing:0.3em;font-size:11px;color:#7A5A32;text-transform:uppercase;margin:0 0 8px;">Arsh Sandhu Allure</p>
+    <p style="text-align:center;letter-spacing:0.3em;font-size:11px;color:#7A5A32;text-transform:uppercase;margin:0 0 8px;">Belle Rose Artistry</p>
     <hr style="border:none;border-top:1px solid #C8B8AC;width:64px;margin:0 auto 28px;">
     <h1 style="font-size:22px;font-weight:500;text-align:center;margin:0 0 20px;">${heading}</h1>
     <div style="font-size:15px;line-height:1.7;color:#4A3828;">${bodyHtml}</div>
     ${ctaUrl ? `<p style="text-align:center;margin:32px 0 0;"><a href="${ctaUrl}" style="display:inline-block;border:1px solid #7A5A32;color:#7A5A32;text-decoration:none;padding:12px 28px;letter-spacing:0.2em;font-size:12px;text-transform:uppercase;">${ctaText}</a></p>` : ''}
     <hr style="border:none;border-top:1px solid #C8B8AC;width:64px;margin:36px auto 16px;">
-    <p style="text-align:center;font-size:11px;letter-spacing:0.15em;color:#8A7A70;text-transform:uppercase;margin:0;">Where Elegance Meets Artistry</p>
+    <p style="text-align:center;font-size:11px;letter-spacing:0.15em;color:#8A7A70;text-transform:uppercase;margin:0;">Beauty, Crafted Around You</p>
   </div>
 </div>`
   const context = await browser.newContext({ viewport: { width: 640, height: 600 }, deviceScaleFactor: 2 })
