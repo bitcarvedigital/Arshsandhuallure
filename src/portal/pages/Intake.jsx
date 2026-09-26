@@ -3,10 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../AuthProvider'
 import PortalShell from '../../shared/PortalShell'
-import {
-  Field, Btn, ErrorNote, Spinner, StatusChip, DiamondRule, SectionHeading, MicroLabel, FormSection, AutofillWrap,
-  InfoRow, fmtShortDate,
-} from '../../shared/ui'
+import { Field, Btn, ErrorNote, Spinner, StatusChip, MicroLabel, FormSection, AutofillWrap, InfoRow, btnClass, softNote, emptyNote, rowLine, rowLink } from '../../shared/ui'
 import { SERVICE_LABELS } from '../../shared/booking/services.js'
 import { sortEvents } from '../../shared/booking/pricing.js'
 import {
@@ -170,7 +167,7 @@ export default function Intake() {
 
   if (intake === undefined) {
     return (
-      <PortalShell title="Intake" nav={NAV} onSignOut={signOut}>
+      <PortalShell title="Client Intake" nav={NAV} onSignOut={signOut}>
         <Spinner />
       </PortalShell>
     )
@@ -186,159 +183,181 @@ export default function Intake() {
 
   return (
     <PortalShell title="Client Intake" nav={NAV} onSignOut={signOut}>
-      <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
-        <SectionHeading eyebrow="Client Intake Form" title="You & your party" />
-        <div className="flex items-center gap-3">
-          {editable && (
-            <span className="text-[10px] tracking-[0.2em] uppercase text-[#8A7A70]">{saved ? 'Saved ✓' : 'Saving…'}</span>
-          )}
-          <StatusChip status={intake?.status || 'draft'} />
-        </div>
+      <MicroLabel className="mb-2">Client Intake</MicroLabel>
+      <h1 className="font-heading text-3xl text-dark">You &amp; your party</h1>
+      {editable && (
+        <p className="text-sm text-muted max-w-lg mt-2">
+          We’ve filled in what we already know from your booking — anything highlighted just needs a quick check.
+          Tap it to confirm, or change it if something’s off.
+        </p>
+      )}
+      <div className="flex items-center gap-3 mt-4">
+        <StatusChip status={intake?.status || 'draft'} />
+        {editable && (
+          <span role="status" aria-live="polite" className="text-[10px] tracking-[0.2em] uppercase text-faint">
+            {saved ? 'Saved ✓' : 'Saving…'}
+          </span>
+        )}
       </div>
-      <p className="text-sm text-[#7A6355] max-w-lg">
-        We’ve filled in what we already know from your booking — anything highlighted just needs a quick check.
-        Tap it to confirm, or change it if something’s off.
-      </p>
 
       {intake?.status === 'changes_requested' && (
-        <div className="border-l-2 border-[#8a3a2a] bg-[#F6E8E2] px-5 py-4 mt-6">
-          <MicroLabel className="mb-1">A note from Arsh</MicroLabel>
-          <p className="text-sm text-[#5A2A1A]">{intake.review_message}</p>
-          <Btn variant="outline" className="mt-4" onClick={revise} disabled={busy}>Revise my answers</Btn>
+        <div className={`${softNote} mt-6`}>
+          <MicroLabel className="mb-1.5">A note from Arsh</MicroLabel>
+          <p className="leading-relaxed whitespace-pre-line">{intake.review_message}</p>
+          <Btn variant="outline" size="sm" className="mt-4" onClick={revise} disabled={busy}>Revise my answers</Btn>
         </div>
       )}
       {intake?.status === 'approved' && (
-        <div className="border-l-2 border-gold bg-beige-card px-5 py-4 mt-6 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-[#5A4030]">Your intake is confirmed. Need to change something?</p>
-          <Btn variant="outline" onClick={revise} disabled={busy}>Make changes</Btn>
+        <div className={`${softNote} mt-6 flex flex-wrap items-center justify-between gap-3`}>
+          <p>Your intake is confirmed. Need to change something?</p>
+          <Btn variant="outline" size="sm" onClick={revise} disabled={busy}>Make changes</Btn>
         </div>
       )}
       {intake?.status === 'pending' && (
-        <div className="border-l-2 border-gold bg-beige-card px-5 py-4 mt-6">
-          <p className="text-sm text-[#5A4030]">Submitted — Arsh is reviewing it. You’ll see it confirmed here shortly.</p>
-        </div>
+        <p role="status" className={`${softNote} mt-6`}>
+          Submitted — Arsh is reviewing it. You’ll see it confirmed here shortly.
+        </p>
       )}
 
-      <DiamondRule className="my-10" />
-
-      <FormSection title="1 · About you">
-        <div>
-          <InfoRow label="Name" value={client?.full_name} />
-          <InfoRow label="Email" value={client?.email} />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <AutofillWrap state={af['profile.phone']} onAcknowledge={acknowledge('profile.phone')}>
-            <Field label="Phone" type="tel" value={p.profile?.phone || ''} onChange={setProfile('phone')} disabled={!editable} />
-          </AutofillWrap>
-          <Field label="How did you hear about us?" value={p.profile?.referral_source || ''} onChange={setProfile('referral_source')} placeholder="Instagram, a friend…" disabled={!editable} />
-        </div>
-        <p className="text-xs text-[#8A7A70] -mt-2">Need a different name or email? Just message Arsh — she’ll update it for you.</p>
-      </FormSection>
-
-      <FormSection title="2 · Your events" hint="Where and when we’ll be getting everyone ready.">
-        {events.length === 0 && <p className="text-sm text-[#A89080]">Arsh is still setting up your events.</p>}
-        {events.map((b) => {
-          const ev = byEvent[b.id] || {}
-          const fieldProps = (field, extra = {}) => ({
-            value: ev[field] ?? '',
-            onChange: setEventField(b.id, field),
-            disabled: !editable,
-            ...extra,
-          })
-          const wrap = (field, input) => (
-            <AutofillWrap state={af[eventKey(b.id, field)]} onAcknowledge={acknowledge(eventKey(b.id, field))}>
-              {input}
+      <div className="mt-10">
+        <FormSection title="1 · About you">
+          <div>
+            <InfoRow label="Name" value={client?.full_name} />
+            <InfoRow label="Email" value={client?.email} />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <AutofillWrap state={af['profile.phone']} onAcknowledge={acknowledge('profile.phone')}>
+              <Field label="Phone" type="tel" value={p.profile?.phone || ''} onChange={setProfile('phone')} disabled={!editable} />
             </AutofillWrap>
-          )
-          return (
-            <div key={b.id} className="flex flex-col gap-6">
-              <h3 className="font-heading text-xl text-dark border-b border-[#E0D2C2] pb-2">
-                {b.name || b.event_type}
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {wrap('event_date', <Field label={EVENT_FIELD_LABELS.event_date} type="date" {...fieldProps('event_date')} />)}
-                {wrap('ready_time', <Field label={EVENT_FIELD_LABELS.ready_time} type="time" {...fieldProps('ready_time')} />)}
-              </div>
-              {wrap('address', <Field label={EVENT_FIELD_LABELS.address} {...fieldProps('address', { placeholder: 'Where we set up' })} />)}
-              {wrap('party_size', <Field label={EVENT_FIELD_LABELS.party_size} type="number" min="0" {...fieldProps('party_size')} />)}
-            </div>
-          )
-        })}
-      </FormSection>
+            <Field label="How did you hear about us?" value={p.profile?.referral_source || ''} onChange={setProfile('referral_source')} placeholder="Instagram, a friend…" disabled={!editable} />
+          </div>
+          <p className="text-xs text-faint -mt-2">Need a different name or email? Just message Arsh — she’ll update it for you.</p>
+        </FormSection>
 
-      <FormSection title="3 · Your look">
-        {bride && (
-          <Link
-            to={`/portal/intake/member/${bride.id}`}
-            className={`flex items-center justify-between gap-3 border p-5 transition-colors hover:border-gold ${brideChecks ? 'border-gold bg-[#F4E9DA]' : 'border-[#C8B8AC] bg-[#FBF8F4]'}`}
-          >
+        <FormSection title="2 · Your events" hint="Where and when we’ll be getting everyone ready.">
+          {events.length === 0 && <p className={emptyNote}>Arsh is still setting up your events.</p>}
+          {events.length > 0 && (
+            <div className="flex flex-col gap-12">
+              {events.map((b) => {
+                const ev = byEvent[b.id] || {}
+                const fieldProps = (field, extra = {}) => ({
+                  value: ev[field] ?? '',
+                  onChange: setEventField(b.id, field),
+                  disabled: !editable,
+                  ...extra,
+                })
+                const wrap = (field, input) => (
+                  <AutofillWrap state={af[eventKey(b.id, field)]} onAcknowledge={acknowledge(eventKey(b.id, field))}>
+                    {input}
+                  </AutofillWrap>
+                )
+                return (
+                  <div key={b.id} className="flex flex-col gap-6">
+                    <h3 className="font-heading text-xl text-dark">{b.name || b.event_type}</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      {wrap('event_date', <Field label={EVENT_FIELD_LABELS.event_date} type="date" {...fieldProps('event_date')} />)}
+                      {wrap('ready_time', <Field label={EVENT_FIELD_LABELS.ready_time} type="time" {...fieldProps('ready_time')} />)}
+                    </div>
+                    {wrap('address', <Field label={EVENT_FIELD_LABELS.address} {...fieldProps('address', { placeholder: 'Where we set up' })} />)}
+                    {wrap('party_size', <Field label={EVENT_FIELD_LABELS.party_size} type="number" min="0" inputMode="numeric" {...fieldProps('party_size')} />)}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </FormSection>
+
+        <FormSection title="3 · Your look">
+          {bride && (
+            <Link
+              to={`/portal/intake/member/${bride.id}`}
+              className={`rounded-2xl flex items-center justify-between gap-4 px-5 py-5 transition-colors ${brideChecks ? 'bg-soft/70 hover:bg-soft' : 'bg-surface hover:bg-soft/50'}`}
+            >
+              <div className="min-w-0">
+                <h3 className="font-heading text-lg text-dark">{bride.name || 'Your look'}</h3>
+                <p className="text-sm text-muted mt-0.5">
+                  {bride.services ? `${SERVICE_LABELS[bride.services]} · ` : ''}Your preferences &amp; inspiration photos
+                </p>
+                {brideChecks > 0 && (
+                  <p className="text-xs text-gold mt-2 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gold shrink-0" aria-hidden="true" />
+                    {brideChecks} auto-filled answer{brideChecks === 1 ? '' : 's'} to check
+                  </p>
+                )}
+              </div>
+              <span className="shrink-0">
+                <StatusChip status={bride.status} />
+              </span>
+            </Link>
+          )}
+        </FormSection>
+
+        <FormSection
+          title={`4 · Your party (${party.length})`}
+          hint="Add each person yourself, or share your party link so everyone fills in their own details — their profiles appear here automatically."
+        >
+          {party.length === 0 ? (
+            <p className={emptyNote}>No one here yet — add your first person or share your party link.</p>
+          ) : (
             <div>
-              <h3 className="font-heading text-lg text-dark">{bride.name || 'Your look'}</h3>
-              <p className="text-xs text-[#8A7A70] mt-1">
-                {bride.services ? `${SERVICE_LABELS[bride.services]} · ` : ''}Your preferences & inspiration photos
+              {party.map((m) => (
+                <div key={m.id} className={`${rowLine} flex items-center gap-2`}>
+                  <Link to={`/portal/intake/member/${m.id}`} className={`${rowLink} flex-1 min-w-0`}>
+                    <span className="min-w-0">
+                      <span className="block font-heading text-lg text-dark truncate">{m.name || 'Unnamed'}</span>
+                      <span className="block text-xs text-faint mt-0.5 truncate">
+                        {[m.relation, SERVICE_LABELS[m.services], ...(m.event_ids || []).map(eventName).filter(Boolean)].filter(Boolean).join(' · ') || 'Tap to fill in'}
+                      </span>
+                    </span>
+                    <span className="shrink-0">
+                      <StatusChip status={m.status} />
+                    </span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => removeMember(m)}
+                    aria-label={`Remove ${m.name || 'this person'}`}
+                    className="shrink-0 w-10 h-10 -mr-2 flex items-center justify-center rounded-full text-faint hover:text-danger hover:bg-soft/70 transition-colors cursor-pointer"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 12 12" className="w-3 h-3">
+                      <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex flex-wrap gap-3">
+            <Btn variant="outline" size="sm" onClick={addMember}>+ Add a person</Btn>
+            <Link to="/portal/party-link" className={btnClass('outline', 'sm')}>Share a link</Link>
+          </div>
+        </FormSection>
+
+        {(editable || members.some((m) => m.status === 'draft')) && (
+          <FormSection title="5 · Review & send to Arsh">
+            <div className="max-w-md">
+              <p className="text-sm text-muted leading-relaxed">
+                Save as you go, and send it over once you’re happy — Arsh reviews it personally and confirms. You can
+                still make changes afterwards.
               </p>
-              {brideChecks > 0 && (
-                <p className="text-[11px] text-gold mt-1">
-                  {brideChecks} auto-filled answer{brideChecks === 1 ? '' : 's'} to check
+              {pendingChecks(af) > 0 && (
+                <p className="text-sm text-gold mt-3 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold shrink-0" aria-hidden="true" />
+                  {pendingChecks(af)} highlighted answer{pendingChecks(af) === 1 ? '' : 's'} still to check.
                 </p>
               )}
             </div>
-            <StatusChip status={bride.status} />
-          </Link>
+            <div role="status" aria-live="polite" className="empty:hidden">
+              <ErrorNote>{error}</ErrorNote>
+              {msg && <p className="text-gold text-sm">{msg}</p>}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Btn onClick={submitAll} disabled={busy} className="w-full sm:w-auto">{busy ? 'Sending…' : 'Submit to Arsh'}</Btn>
+              {editable && <Btn variant="outline" onClick={saveProgress} className="w-full sm:w-auto">Save progress</Btn>}
+            </div>
+          </FormSection>
         )}
-      </FormSection>
-
-      <FormSection
-        title={`4 · Your party (${party.length})`}
-        hint="Add each person yourself, or share your party link so everyone fills in their own details — their profiles appear here automatically."
-        action={
-          <div className="flex gap-2">
-            <Btn variant="gold" className="!px-4 !py-2.5" onClick={addMember}>+ Add person</Btn>
-            <Link to="/portal/party-link"><Btn variant="outline" className="!px-4 !py-2.5">Share a link</Btn></Link>
-          </div>
-        }
-      >
-        {party.length === 0 && (
-          <p className="text-sm text-[#A89080] border border-dashed border-[#C8B8AC] p-6 text-center">
-            No one here yet — add your first person or share your party link.
-          </p>
-        )}
-        {party.map((m) => (
-          <div key={m.id} className="flex items-center justify-between gap-3 border-b border-[#EFE6DA] pb-3">
-            <Link to={`/portal/intake/member/${m.id}`} className="flex-1 min-w-0">
-              <h3 className="font-heading text-base text-dark truncate">{m.name || 'Unnamed'}</h3>
-              <p className="text-xs text-[#8A7A70] truncate">
-                {[m.relation, SERVICE_LABELS[m.services], ...(m.event_ids || []).map(eventName).filter(Boolean)].filter(Boolean).join(' · ') || 'Tap to fill in'}
-              </p>
-            </Link>
-            <StatusChip status={m.status} />
-            <button onClick={() => removeMember(m)} aria-label="Remove" className="text-[#8A7A70] hover:text-[#8a3a2a] text-lg px-1 cursor-pointer">×</button>
-          </div>
-        ))}
-      </FormSection>
-
-      {(editable || members.some((m) => m.status === 'draft')) && (
-        <FormSection title="5 · Review & send to Arsh">
-          <p className="text-sm text-[#7A6355] max-w-md">
-            Save as you go, and send it over once you’re happy — Arsh reviews it personally and confirms. You can
-            still make changes afterwards.
-            {pendingChecks(af) > 0 && (
-              <span className="block mt-2 text-gold">
-                {pendingChecks(af)} highlighted answer{pendingChecks(af) === 1 ? '' : 's'} still to check.
-              </span>
-            )}
-          </p>
-          <ErrorNote>{error}</ErrorNote>
-          {msg && <p className="text-gold text-sm">{msg}</p>}
-          <div className="flex flex-wrap gap-3">
-            {editable && <Btn variant="outline" onClick={saveProgress}>Save progress</Btn>}
-            <Btn onClick={submitAll} disabled={busy}>{busy ? 'Sending…' : 'Submit to Arsh'}</Btn>
-          </div>
-          <p className="text-[10px] tracking-[0.15em] uppercase text-[#8A7A70]">
-            Events: {events.map((e) => `${e.name || e.event_type} (${fmtShortDate(e.event_date)})`).join(' · ') || '—'}
-          </p>
-        </FormSection>
-      )}
+      </div>
     </PortalShell>
   )
 }

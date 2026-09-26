@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../../../lib/supabaseClient'
 import { Btn, FormSection } from '../../../shared/ui'
+import { SaveNote } from '../../adminUi'
 
 export default function NotesTab({ notes, clientId }) {
   const [text, setText] = useState(notes?.notes || '')
@@ -12,18 +13,21 @@ export default function NotesTab({ notes, clientId }) {
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Preferences, reminders, anything worth remembering…"
-        className="bg-[#FBF8F4] border border-[#C8B8AC] p-4 text-sm text-dark focus:outline-none focus:border-gold resize-y max-w-xl"
+        aria-label="Private notes"
+        className="w-full max-w-2xl rounded-2xl bg-surface px-5 py-4 text-sm leading-relaxed text-dark placeholder-faint focus:outline-none focus:ring-1 focus:ring-gold/40 resize-y"
       />
-      {msg && <p className="text-gold text-sm">{msg}</p>}
-      <Btn
-        className="self-start"
-        onClick={async () => {
-          const { error } = await supabase.from('admin_notes').update({ notes: text }).eq('client_id', clientId)
-          setMsg(error ? 'Could not save.' : 'Saved ✓')
-        }}
-      >
-        Save notes
-      </Btn>
+      <div className="flex items-center gap-4 flex-wrap">
+        <Btn
+          size="sm"
+          onClick={async () => {
+            const { error } = await supabase.from('admin_notes').update({ notes: text }).eq('client_id', clientId)
+            setMsg(error ? 'Could not save.' : 'Saved ✓')
+          }}
+        >
+          Save notes
+        </Btn>
+        <SaveNote error={msg === 'Could not save.'}>{msg}</SaveNote>
+      </div>
     </FormSection>
   )
 }

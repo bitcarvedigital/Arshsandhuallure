@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { Field, Select, TextArea, FormSection, Btn, money, fmtShortDate, cellInputClass, labelClass } from '../../../shared/ui'
+import { Field, Select, TextArea, FormSection, Btn, Chevron, SectionsToggle, useSectionOpen, money, fmtShortDate, cellInputClass, labelClass, metaLabelClass } from '../../../shared/ui'
+import { iconBtn, iconRemoveBtn, quietBtn, quietDangerBtn } from '../../adminUi'
 import { EVENT_TYPES, SERVICE_LABELS } from '../../../shared/booking/services.js'
 import { summarizeBooking, lineAmount, RETAINER_PERCENT } from '../../../shared/booking/pricing.js'
 
@@ -71,18 +72,18 @@ function asRows(events) {
 }
 
 function SmallLabel({ children }) {
-  return <span className="text-[10px] tracking-[0.2em] uppercase text-[#8A7A70]">{children}</span>
+  return <span className={metaLabelClass}>{children}</span>
 }
 
 function RemoveBtn({ onClick, label = 'Remove' }) {
   return (
-    <button type="button" onClick={onClick} aria-label={label} className="text-[#8A7A70] hover:text-[#8a3a2a] text-lg leading-none px-1 cursor-pointer">
+    <button type="button" onClick={onClick} aria-label={label} title={label} className={`${iconRemoveBtn} -mr-2`}>
       ×
     </button>
   )
 }
 
-function EventEditor({ event, index, count, priceList, onChange, onRemove, onMove, onDuplicate }) {
+function EventEditor({ event, index, count, priceList, onChange, onRemove, onMove, onDuplicate, scope, collapsed }) {
   const set = (patch) => onChange({ ...event, ...patch })
   const setLine = (k, patch) => set({ lines: event.lines.map((l) => (l.key === k ? { ...l, ...patch } : l)) })
   const removeLine = (k) => set({ lines: event.lines.filter((l) => l.key !== k) })
@@ -119,203 +120,244 @@ function EventEditor({ event, index, count, priceList, onChange, onRemove, onMov
   }
 
   const title = (event.name || event.event_type || 'Event').trim()
+  // saved events start folded on the Overview; new ones start open
+  const sid = scope ? `${scope}:ev:${event.key}` : null
+  const [open, setOpen] = useSectionOpen(sid, !(collapsed && event.id))
+  const counts = [ev.hairCount && `Hair ${ev.hairCount}`, ev.makeupCount && `Makeup ${ev.makeupCount}`].filter(Boolean).join(' · ')
+  const people = Number(event.party_size) > 0 ? `${event.party_size} ${Number(event.party_size) === 1 ? 'person' : 'people'}` : null
+  const eventSummary = [people, counts, money(ev.subtotal)].filter(Boolean).join(' · ')
 
   return (
-    <div className="border-t-2 border-dark pt-6 mb-4">
-      <div className="flex items-start justify-between gap-3 flex-wrap mb-8">
-        <div>
-          <p className="text-[10px] tracking-[0.3em] uppercase text-gold">Event {index + 1} of {count}</p>
-          <h3 className="font-heading text-2xl text-dark mt-1">
-            {title} <span className="text-base text-[#8A7A70]">· {fmtShortDate(event.event_date)}</span>
-          </h3>
-        </div>
-        <div className="flex items-center gap-1 text-[10px] tracking-[0.2em] uppercase">
-          <button type="button" disabled={index === 0} onClick={() => onMove(-1)} className="px-2 py-1 text-[#8A7A70] hover:text-gold disabled:opacity-30 cursor-pointer">↑ Up</button>
-          <button type="button" disabled={index === count - 1} onClick={() => onMove(1)} className="px-2 py-1 text-[#8A7A70] hover:text-gold disabled:opacity-30 cursor-pointer">↓ Down</button>
-          <button type="button" onClick={onDuplicate} className="px-2 py-1 text-[#8A7A70] hover:text-gold cursor-pointer">Duplicate</button>
-          <button type="button" onClick={onRemove} className="px-2 py-1 text-[#8a3a2a] hover:underline cursor-pointer">Remove</button>
+    <div className={`border-t border-line ${open ? 'pt-8 mb-4' : 'py-5'}`}>
+      <div className={`flex items-start justify-between gap-x-4 gap-y-2 flex-wrap ${open ? 'mb-10' : ''}`}>
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          aria-expanded={open}
+          className="group flex items-start gap-3 text-left cursor-pointer min-w-0"
+        >
+          <Chevron open={open} className="mt-2" />
+          <span className="min-w-0">
+            <span className="block text-[10px] tracking-[0.3em] uppercase text-gold">Event {index + 1} of {count}</span>
+            <span className="block font-heading text-2xl text-dark mt-1 group-hover:text-gold transition-colors">
+              {title} <span className="text-base text-faint">· {fmtShortDate(event.event_date)}</span>
+            </span>
+            {!open && <span className="block text-sm text-muted mt-1">{eventSummary}</span>}
+          </span>
+        </button>
+        <div className="flex items-center gap-0.5 -ml-2 sm:ml-0 sm:-mr-2" role="group" aria-label={`${title} — arrange`}>
+          {count > 1 && (
+            <>
+              <button type="button" disabled={index === 0} onClick={() => onMove(-1)} className={iconBtn} aria-label={`Move ${title} up`} title="Move up">
+                ↑
+              </button>
+              <button type="button" disabled={index === count - 1} onClick={() => onMove(1)} className={iconBtn} aria-label={`Move ${title} down`} title="Move down">
+                ↓
+              </button>
+            </>
+          )}
+          <button type="button" onClick={onDuplicate} className={quietBtn}>Duplicate</button>
+          <button type="button" onClick={onRemove} className={quietDangerBtn}>Remove</button>
         </div>
       </div>
 
-      <FormSection title="Event details">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <Select
-            label="Event type"
-            options={EVENT_TYPES.map((t) => ({ value: t, label: t }))}
-            value={event.event_type}
-            onChange={(e) => {
-              const t = e.target.value
-              const renamed = !event.name || event.name === event.event_type
-              set({ event_type: t, ...(renamed && t !== 'Other' ? { name: t } : {}) })
-            }}
-          />
-          <Field label="Event name" value={event.name} onChange={(e) => set({ name: e.target.value })} placeholder="e.g. Simran’s Mehndi" />
-          <Field label="Event date" type="date" value={event.event_date} onChange={(e) => set({ event_date: e.target.value })} />
-          <Field label="Party size (people styled)" type="number" min="0" value={event.party_size} onChange={(e) => set({ party_size: e.target.value })} placeholder={`${ev.hairCount || ev.makeupCount ? Math.max(ev.hairCount, ev.makeupCount) : ''}`} />
-          <Field label="Artist arrives / start time" type="time" value={event.start_time} onChange={(e) => set({ start_time: e.target.value })} />
-          <Field label="Everyone ready by" type="time" value={event.ready_time} onChange={(e) => set({ ready_time: e.target.value })} />
-        </div>
-        <Field label="Getting-ready address" value={event.address} onChange={(e) => set({ address: e.target.value })} placeholder="Street, city" />
-        <TextArea label="Note for the client (she sees this)" rows={2} value={event.client_note} onChange={(e) => set({ client_note: e.target.value })} placeholder="e.g. Please have good natural light near a window." />
-      </FormSection>
+      {open && (
+        <>
+          <FormSection title="Event details">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <Select
+                label="Event type"
+                options={EVENT_TYPES.map((t) => ({ value: t, label: t }))}
+                value={event.event_type}
+                onChange={(e) => {
+                  const t = e.target.value
+                  const renamed = !event.name || event.name === event.event_type
+                  set({ event_type: t, ...(renamed && t !== 'Other' ? { name: t } : {}) })
+                }}
+              />
+              <Field label="Event name" value={event.name} onChange={(e) => set({ name: e.target.value })} placeholder="e.g. Simran’s Mehndi" />
+              <Field label="Event date" type="date" value={event.event_date} onChange={(e) => set({ event_date: e.target.value })} />
+              <Field label="Party size (people styled)" type="number" min="0" value={event.party_size} onChange={(e) => set({ party_size: e.target.value })} placeholder={`${ev.hairCount || ev.makeupCount ? Math.max(ev.hairCount, ev.makeupCount) : ''}`} />
+              <Field label="Artist arrives / start time" type="time" value={event.start_time} onChange={(e) => set({ start_time: e.target.value })} />
+              <Field label="Everyone ready by" type="time" value={event.ready_time} onChange={(e) => set({ ready_time: e.target.value })} />
+            </div>
+            <Field label="Getting-ready address" value={event.address} onChange={(e) => set({ address: e.target.value })} placeholder="Street, city" />
+            <TextArea label="Note for the client (she sees this)" rows={2} value={event.client_note} onChange={(e) => set({ client_note: e.target.value })} placeholder="e.g. Please have good natural light near a window." />
+          </FormSection>
 
-      <FormSection
-        title="Services booked"
-        hint="What’s booked and for how many people. Prices go in the next section."
-        action={
-          (ev.hairCount > 0 || ev.makeupCount > 0) && (
-            <span className="text-[11px] text-dark">
-              Hair <strong>{ev.hairCount}</strong> · Makeup <strong>{ev.makeupCount}</strong>
-            </span>
-          )
-        }
-      >
-        {services.length === 0 && <p className="text-sm text-[#A89080]">No services yet.</p>}
-        {services.map((l) => {
-          const custom = !l.code
-          return (
-            <div key={l.key} className="flex flex-col gap-3 border-b border-[#EFE6DA] pb-4">
-              <div className="flex items-end gap-3">
-                <label className="flex-1 min-w-0 flex flex-col gap-1">
-                  <SmallLabel>Service</SmallLabel>
-                  <select
-                    className={cellInputClass + ' cursor-pointer'}
-                    value={custom ? '__custom' : l.code}
-                    onChange={(e) => pickService(l.key, e.target.value)}
-                  >
-                    {serviceOptions.map((p) => (
-                      <option key={p.code} value={p.code}>{p.label}</option>
-                    ))}
-                    <option value="__custom">Custom service…</option>
-                  </select>
-                </label>
-                <label className="w-20 flex flex-col gap-1">
-                  <SmallLabel>How many</SmallLabel>
-                  <input className={cellInputClass} type="number" min="0" step="1" inputMode="numeric" value={l.qty} onChange={(e) => setLine(l.key, { qty: e.target.value })} />
-                </label>
-                <RemoveBtn onClick={() => removeLine(l.key)} />
-              </div>
-              {custom && (
-                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-3 items-end">
-                  <label className="flex flex-col gap-1">
-                    <SmallLabel>Name of service</SmallLabel>
-                    <input className={cellInputClass} value={l.label} onChange={(e) => setLine(l.key, { label: e.target.value })} placeholder="e.g. Saree draping + hair" />
-                  </label>
-                  <label className="flex flex-col gap-1">
-                    <SmallLabel>Type</SmallLabel>
-                    <select className={cellInputClass + ' cursor-pointer'} value={l.service || ''} onChange={(e) => setLine(l.key, { service: e.target.value || null })}>
-                      <option value="hair">Hair</option>
-                      <option value="makeup">Makeup</option>
-                      <option value="both">Hair & Makeup</option>
-                      <option value="">Neither (add-on)</option>
-                    </select>
-                  </label>
-                  <label className="flex items-center gap-2 text-xs text-dark pb-2 cursor-pointer">
-                    <input type="checkbox" className="accent-[#7A5A32]" checked={!!l.for_bride} onChange={(e) => setLine(l.key, { for_bride: e.target.checked })} />
-                    For the bride
-                  </label>
+          <FormSection
+            title="Services booked"
+            hint="What’s booked and for how many people. Prices go in the next section."
+            action={
+              (ev.hairCount > 0 || ev.makeupCount > 0) && (
+                <span className="text-xs text-muted">
+                  Hair <span className="text-dark font-medium">{ev.hairCount}</span> · Makeup{' '}
+                  <span className="text-dark font-medium">{ev.makeupCount}</span>
+                </span>
+              )
+            }
+          >
+            {services.length === 0 && <p className="text-sm text-faint">No services yet.</p>}
+            {services.map((l) => {
+              const custom = !l.code
+              return (
+                <div key={l.key} className="flex flex-col gap-3 border-b border-line pb-4">
+                  <div className="flex items-end gap-3">
+                    <label className="flex-1 min-w-0 flex flex-col gap-1">
+                      <SmallLabel>Service</SmallLabel>
+                      <select
+                        className={cellInputClass + ' cursor-pointer'}
+                        value={custom ? '__custom' : l.code}
+                        onChange={(e) => pickService(l.key, e.target.value)}
+                      >
+                        {serviceOptions.map((p) => (
+                          <option key={p.code} value={p.code}>{p.label}</option>
+                        ))}
+                        <option value="__custom">Custom service…</option>
+                      </select>
+                    </label>
+                    <label className="w-20 flex flex-col gap-1">
+                      <SmallLabel>How many</SmallLabel>
+                      <input className={cellInputClass} type="number" min="0" step="1" inputMode="numeric" value={l.qty} onChange={(e) => setLine(l.key, { qty: e.target.value })} />
+                    </label>
+                    <RemoveBtn onClick={() => removeLine(l.key)} label={`Remove ${l.label || 'this service'}`} />
+                  </div>
+                  {custom && (
+                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-3 items-end">
+                      <label className="flex flex-col gap-1">
+                        <SmallLabel>Name of service</SmallLabel>
+                        <input className={cellInputClass} value={l.label} onChange={(e) => setLine(l.key, { label: e.target.value })} placeholder="e.g. Saree draping + hair" />
+                      </label>
+                      <label className="flex flex-col gap-1">
+                        <SmallLabel>Type</SmallLabel>
+                        <select className={cellInputClass + ' cursor-pointer'} value={l.service || ''} onChange={(e) => setLine(l.key, { service: e.target.value || null })}>
+                          <option value="hair">Hair</option>
+                          <option value="makeup">Makeup</option>
+                          <option value="both">Hair & Makeup</option>
+                          <option value="">Neither (add-on)</option>
+                        </select>
+                      </label>
+                      <label className="flex items-center gap-2 min-h-9 text-sm text-dark cursor-pointer">
+                        <input type="checkbox" className="accent-gold w-4 h-4" checked={!!l.for_bride} onChange={(e) => setLine(l.key, { for_bride: e.target.checked })} />
+                        For the bride
+                      </label>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          )
-        })}
-        <div className="flex flex-wrap gap-2">
-          <Btn type="button" variant="outline" className="!px-4 !py-2.5" onClick={() => {
-            const first = serviceOptions.find((p) => !p.for_bride) || serviceOptions[0]
-            addLine({ kind: 'service', code: first?.code || '', label: first?.label || '', service: first?.service ?? 'both', for_bride: !!first?.for_bride, minutes: first?.minutes ?? null, unit_price: first?.price ?? '' })
-          }}>
-            + Add service
-          </Btn>
-        </div>
-      </FormSection>
+              )
+            })}
+            <Btn
+              type="button"
+              variant="outline"
+              size="sm"
+              className="self-start"
+              onClick={() => {
+                const first = serviceOptions.find((p) => !p.for_bride) || serviceOptions[0]
+                addLine({ kind: 'service', code: first?.code || '', label: first?.label || '', service: first?.service ?? 'both', for_bride: !!first?.for_bride, minutes: first?.minutes ?? null, unit_price: first?.price ?? '' })
+              }}
+            >
+              + Add service
+            </Btn>
+          </FormSection>
 
-      <FormSection title="Service prices" hint="Price per person for each service above.">
-        {services.length === 0 && <p className="text-sm text-[#A89080]">Add a service above to price it.</p>}
-        {services.map((l) => (
-          <div key={l.key} className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_auto_auto] gap-x-4 gap-y-1 items-end border-b border-[#EFE6DA] pb-3">
-            <div className="min-w-0">
-              <p className="text-sm text-dark truncate">{l.label || 'Custom service'}</p>
-              <p className="text-[11px] text-[#8A7A70]">
-                {[SERVICE_LABELS[l.service], l.for_bride ? 'Bride' : null, `× ${l.qty || 0}`].filter(Boolean).join(' · ')}
-              </p>
-            </div>
-            <label className="w-28 flex flex-col gap-1">
-              <SmallLabel>Each ($)</SmallLabel>
-              <input className={cellInputClass} type="number" min="0" step="0.01" inputMode="decimal" value={l.unit_price} onChange={(e) => setLine(l.key, { unit_price: e.target.value })} placeholder="0.00" />
-            </label>
-            <p className="col-span-2 sm:col-span-1 sm:w-24 text-right text-sm text-dark pb-2">{money(lineAmount({ qty: Number(l.qty) || 0, unit_price: Number(l.unit_price) || 0 }))}</p>
-          </div>
-        ))}
-      </FormSection>
+          <FormSection title="Service prices" hint="Price per person for each service above.">
+            {services.length === 0 && <p className="text-sm text-faint">Add a service above to price it.</p>}
+            {services.map((l) => (
+              <div key={l.key} className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_auto_auto] gap-x-4 gap-y-1 items-end border-b border-line pb-3">
+                <div className="min-w-0">
+                  <p className="text-sm text-dark truncate">{l.label || 'Custom service'}</p>
+                  <p className="text-[11px] text-faint">
+                    {[SERVICE_LABELS[l.service], l.for_bride ? 'Bride' : null, `× ${l.qty || 0}`].filter(Boolean).join(' · ')}
+                  </p>
+                </div>
+                <label className="w-28 flex flex-col gap-1">
+                  <SmallLabel>Each ($)</SmallLabel>
+                  <input className={cellInputClass} type="number" min="0" step="0.01" inputMode="decimal" value={l.unit_price} onChange={(e) => setLine(l.key, { unit_price: e.target.value })} placeholder="0.00" />
+                </label>
+                <p className="col-span-2 sm:col-span-1 sm:w-24 text-right text-sm text-dark tabular-nums pb-2">{money(lineAmount({ qty: Number(l.qty) || 0, unit_price: Number(l.unit_price) || 0 }))}</p>
+              </div>
+            ))}
+          </FormSection>
 
-      <FormSection title="Additional fees" hint="Leave a fee blank if it doesn’t apply.">
-        {standardFees.map((p) => {
-          const l = feeFor(p.code)
-          return (
-            <div key={p.code} className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 gap-y-1 items-end border-b border-[#EFE6DA] pb-3">
-              <p className="text-sm text-dark pb-2">{p.label}</p>
-              <label className="w-16 flex flex-col gap-1">
-                <SmallLabel>Qty</SmallLabel>
-                <input className={cellInputClass} type="number" min="0" step="1" value={l?.qty ?? 1} onChange={(e) => setStandardFee(p, { qty: e.target.value })} />
+          <FormSection title="Additional fees" hint="Leave a fee blank if it doesn’t apply.">
+            {standardFees.map((p) => {
+              const l = feeFor(p.code)
+              return (
+                <div key={p.code} className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 gap-y-1 items-end border-b border-line pb-3">
+                  <p className="text-sm text-dark pb-2">{p.label}</p>
+                  <label className="w-16 flex flex-col gap-1">
+                    <SmallLabel>Qty</SmallLabel>
+                    <input className={cellInputClass} type="number" min="0" step="1" value={l?.qty ?? 1} onChange={(e) => setStandardFee(p, { qty: e.target.value })} />
+                  </label>
+                  <label className="w-28 flex flex-col gap-1">
+                    <SmallLabel>Amount ($)</SmallLabel>
+                    <input className={cellInputClass} type="number" min="0" step="0.01" inputMode="decimal" value={l?.unit_price ?? ''} onChange={(e) => setStandardFee(p, { unit_price: e.target.value })} placeholder="—" />
+                  </label>
+                  <p className="col-span-3 sm:col-span-1 sm:w-24 text-right text-sm text-dark tabular-nums pb-2">{l && Number(l.unit_price) > 0 ? money(lineAmount({ qty: Number(l.qty) || 0, unit_price: Number(l.unit_price) })) : '—'}</p>
+                </div>
+              )
+            })}
+            {fees.filter((l) => !standardFees.some((p) => p.code === l.code)).map((l) => (
+              <div key={l.key} className="grid grid-cols-[1fr_auto_auto_auto] gap-x-4 items-end border-b border-line pb-3">
+                <label className="flex flex-col gap-1 min-w-0">
+                  <SmallLabel>Other fee</SmallLabel>
+                  <input className={cellInputClass} value={l.label} onChange={(e) => setLine(l.key, { label: e.target.value })} placeholder="e.g. Hotel stay" />
+                </label>
+                <label className="w-16 flex flex-col gap-1">
+                  <SmallLabel>Qty</SmallLabel>
+                  <input className={cellInputClass} type="number" min="0" step="1" value={l.qty} onChange={(e) => setLine(l.key, { qty: e.target.value })} />
+                </label>
+                <label className="w-28 flex flex-col gap-1">
+                  <SmallLabel>Amount ($)</SmallLabel>
+                  <input className={cellInputClass} type="number" min="0" step="0.01" inputMode="decimal" value={l.unit_price} onChange={(e) => setLine(l.key, { unit_price: e.target.value })} placeholder="0.00" />
+                </label>
+                <RemoveBtn onClick={() => removeLine(l.key)} label={`Remove ${l.label || 'this fee'}`} />
+              </div>
+            ))}
+            <Btn type="button" variant="outline" size="sm" className="self-start" onClick={() => addLine({ kind: 'fee', code: 'other_fee', label: '' })}>
+              + Add another fee
+            </Btn>
+
+            <div className="grid grid-cols-[1fr_auto] gap-x-4 items-end pt-2">
+              <label className="flex flex-col gap-1 min-w-0">
+                <SmallLabel>Discount (optional)</SmallLabel>
+                <input
+                  className={cellInputClass}
+                  value={discounts[0]?.label ?? 'Discount'}
+                  onChange={(e) => (discounts[0] ? setLine(discounts[0].key, { label: e.target.value }) : addLine({ kind: 'discount', code: 'discount', label: e.target.value }))}
+                />
               </label>
               <label className="w-28 flex flex-col gap-1">
-                <SmallLabel>Amount ($)</SmallLabel>
-                <input className={cellInputClass} type="number" min="0" step="0.01" inputMode="decimal" value={l?.unit_price ?? ''} onChange={(e) => setStandardFee(p, { unit_price: e.target.value })} placeholder="—" />
+                <SmallLabel>Amount off ($)</SmallLabel>
+                <input
+                  className={cellInputClass}
+                  type="number" min="0" step="0.01" inputMode="decimal" placeholder="—"
+                  value={discounts[0]?.unit_price ?? ''}
+                  onChange={(e) => (discounts[0] ? setLine(discounts[0].key, { unit_price: e.target.value }) : addLine({ kind: 'discount', code: 'discount', label: 'Discount', unit_price: e.target.value }))}
+                />
               </label>
-              <p className="col-span-3 sm:col-span-1 sm:w-24 text-right text-sm text-dark pb-2">{l && Number(l.unit_price) > 0 ? money(lineAmount({ qty: Number(l.qty) || 0, unit_price: Number(l.unit_price) })) : '—'}</p>
             </div>
-          )
-        })}
-        {fees.filter((l) => !standardFees.some((p) => p.code === l.code)).map((l) => (
-          <div key={l.key} className="grid grid-cols-[1fr_auto_auto_auto] gap-x-4 items-end border-b border-[#EFE6DA] pb-3">
-            <label className="flex flex-col gap-1 min-w-0">
-              <SmallLabel>Other fee</SmallLabel>
-              <input className={cellInputClass} value={l.label} onChange={(e) => setLine(l.key, { label: e.target.value })} placeholder="e.g. Hotel stay" />
-            </label>
-            <label className="w-16 flex flex-col gap-1">
-              <SmallLabel>Qty</SmallLabel>
-              <input className={cellInputClass} type="number" min="0" step="1" value={l.qty} onChange={(e) => setLine(l.key, { qty: e.target.value })} />
-            </label>
-            <label className="w-28 flex flex-col gap-1">
-              <SmallLabel>Amount ($)</SmallLabel>
-              <input className={cellInputClass} type="number" min="0" step="0.01" inputMode="decimal" value={l.unit_price} onChange={(e) => setLine(l.key, { unit_price: e.target.value })} placeholder="0.00" />
-            </label>
-            <RemoveBtn onClick={() => removeLine(l.key)} />
-          </div>
-        ))}
-        <Btn type="button" variant="outline" className="self-start !px-4 !py-2.5" onClick={() => addLine({ kind: 'fee', code: 'other_fee', label: '' })}>
-          + Add another fee
-        </Btn>
+          </FormSection>
 
-        <div className="grid grid-cols-[1fr_auto] gap-x-4 items-end pt-2">
-          <label className="flex flex-col gap-1 min-w-0">
-            <SmallLabel>Discount (optional)</SmallLabel>
-            <input
-              className={cellInputClass}
-              value={discounts[0]?.label ?? 'Discount'}
-              onChange={(e) => (discounts[0] ? setLine(discounts[0].key, { label: e.target.value }) : addLine({ kind: 'discount', code: 'discount', label: e.target.value }))}
-            />
-          </label>
-          <label className="w-28 flex flex-col gap-1">
-            <SmallLabel>Amount off ($)</SmallLabel>
-            <input
-              className={cellInputClass}
-              type="number" min="0" step="0.01" inputMode="decimal" placeholder="—"
-              value={discounts[0]?.unit_price ?? ''}
-              onChange={(e) => (discounts[0] ? setLine(discounts[0].key, { unit_price: e.target.value }) : addLine({ kind: 'discount', code: 'discount', label: 'Discount', unit_price: e.target.value }))}
-            />
-          </label>
-        </div>
-      </FormSection>
+          <FormSection title="Event total">
+            <div className="flex flex-col gap-1 text-sm">
+              <div className="flex justify-between gap-4 py-1"><span className="text-muted">Services</span><span className="text-dark tabular-nums">{money(ev.services)}</span></div>
+              <div className="flex justify-between gap-4 py-1"><span className="text-muted">Additional fees</span><span className="text-dark tabular-nums">{money(ev.fees)}</span></div>
+              {ev.discounts > 0 && <div className="flex justify-between gap-4 py-1"><span className="text-muted">Discount</span><span className="text-success tabular-nums">− {money(ev.discounts)}</span></div>}
+              <div className="flex justify-between gap-4 border-t border-dark pt-3 mt-2"><span className="font-heading text-base text-dark">{title} total</span><span className="font-heading text-lg text-dark tabular-nums">{money(ev.subtotal)}</span></div>
+            </div>
+          </FormSection>
+        </>
+      )}
+    </div>
+  )
+}
 
-      <FormSection title="Event total">
-        <div className="flex flex-col gap-1 text-sm">
-          <div className="flex justify-between"><span className="text-[#7A6355]">Services</span><span>{money(ev.services)}</span></div>
-          <div className="flex justify-between"><span className="text-[#7A6355]">Additional fees</span><span>{money(ev.fees)}</span></div>
-          {ev.discounts > 0 && <div className="flex justify-between"><span className="text-[#7A6355]">Discount</span><span className="text-[#4a6741]">− {money(ev.discounts)}</span></div>}
-          <div className="flex justify-between border-t border-dark pt-2 mt-1"><span className="font-heading text-base">{title} total</span><span className="font-heading text-lg">{money(ev.subtotal)}</span></div>
-        </div>
-      </FormSection>
+function SummaryRow({ label, value, muted, strong }) {
+  return (
+    <div className={`flex justify-between gap-4 py-1.5 text-sm ${strong ? 'border-t border-dark pt-3 mt-2 mb-1' : ''}`}>
+      <span className={strong ? 'font-heading text-base text-dark' : muted ? 'text-faint' : 'text-muted'}>{label}</span>
+      <span className={`tabular-nums text-right ${strong ? 'font-heading text-lg text-dark' : 'text-dark'}`}>{value}</span>
     </div>
   )
 }
@@ -323,12 +365,7 @@ function EventEditor({ event, index, count, priceList, onChange, onRemove, onMov
 export function BookingSummary({ events, payments = [] }) {
   const { evs, lines } = useMemo(() => asRows(events), [events])
   const s = summarizeBooking(evs, lines, payments)
-  const Row = ({ label, value, muted, strong }) => (
-    <div className={`flex justify-between gap-4 py-1.5 text-sm ${strong ? 'border-t border-dark pt-3 mt-1' : ''}`}>
-      <span className={strong ? 'font-heading text-base text-dark' : muted ? 'text-[#8A7A70]' : 'text-[#7A6355]'}>{label}</span>
-      <span className={strong ? 'font-heading text-lg text-dark' : 'text-dark'}>{value}</span>
-    </div>
-  )
+  const Row = SummaryRow
   return (
     <div>
       {s.events.map((e, i) => (
@@ -348,7 +385,7 @@ export function BookingSummary({ events, payments = [] }) {
 }
 
 // The whole Events + pricing editor.
-export default function BookingEditor({ events, onChange, priceList }) {
+export default function BookingEditor({ events, onChange, priceList, scope, collapseEvents = false }) {
   const setEvent = (i, ev) => onChange(events.map((e, j) => (j === i ? ev : e)))
   const removeEvent = (i) => {
     const e = events[i]
@@ -378,27 +415,28 @@ export default function BookingEditor({ events, onChange, priceList }) {
       <FormSection
         title="Events"
         hint="Every event she has booked you for — each gets its own details, services, prices and timeline."
+        action={collapseEvents && events.length > 1 && <SectionsToggle label="events" />}
       >
         <div className="flex items-center gap-4 flex-wrap">
           <span className={labelClass}>Number of events</span>
-          <div className="flex items-center border border-[#A89080]">
-            <button type="button" className="w-10 h-10 text-lg text-dark hover:bg-beige-card cursor-pointer disabled:opacity-30" disabled={events.length <= 1} onClick={() => removeEvent(events.length - 1)} aria-label="One fewer event">−</button>
+          <div className="flex items-center rounded-full bg-beige-card/70">
+            <button type="button" className="w-10 h-10 rounded-full text-lg text-dark hover:bg-[#E3D6C8] cursor-pointer disabled:opacity-30" disabled={events.length <= 1} onClick={() => removeEvent(events.length - 1)} aria-label="One fewer event">−</button>
             <span className="w-10 text-center font-heading text-lg">{events.length}</span>
-            <button type="button" className="w-10 h-10 text-lg text-dark hover:bg-beige-card cursor-pointer disabled:opacity-30" disabled={events.length >= 20} onClick={() => onChange([...events, { ...newEvent('Other'), name: `Event ${events.length + 1}` }])} aria-label="One more event">+</button>
+            <button type="button" className="w-10 h-10 rounded-full text-lg text-dark hover:bg-[#E3D6C8] cursor-pointer disabled:opacity-30" disabled={events.length >= 20} onClick={() => onChange([...events, { ...newEvent('Other'), name: `Event ${events.length + 1}` }])} aria-label="One more event">+</button>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] tracking-[0.2em] uppercase text-[#8A7A70] mr-1">Quick add</span>
+          <span className={`${metaLabelClass} mr-1`}>Quick add</span>
           {QUICK_EVENTS.map((name) => (
-            <button key={name} type="button" onClick={() => onChange([...events, newEvent(name)])} className="px-3 py-2 text-[11px] tracking-[0.12em] uppercase border border-[#A89080] text-dark hover:border-gold hover:text-gold cursor-pointer">
+            <button key={name} type="button" onClick={() => onChange([...events, newEvent(name)])} className="rounded-full px-3.5 py-2 text-sm bg-beige-card/70 text-dark hover:bg-[#E3D6C8] cursor-pointer">
               + {name}
             </button>
           ))}
         </div>
-        <ol className="flex flex-col gap-1">
+        <ol className="flex flex-col gap-2">
           {events.map((e, i) => (
             <li key={e.key} className="flex items-center gap-3 text-sm">
-              <span className="w-5 h-5 border border-gold rotate-45 flex items-center justify-center shrink-0"><span className="-rotate-45 text-[10px] text-gold">{i + 1}</span></span>
+              <span className="w-5 shrink-0 text-sm text-faint tabular-nums">{i + 1}</span>
               <input
                 className={cellInputClass + ' max-w-xs'}
                 value={e.name}
@@ -406,7 +444,7 @@ export default function BookingEditor({ events, onChange, priceList }) {
                 placeholder="Event name"
                 aria-label={`Event ${i + 1} name`}
               />
-              <span className="text-xs text-[#8A7A70] whitespace-nowrap">{fmtShortDate(e.event_date)}</span>
+              <span className="text-xs text-faint whitespace-nowrap shrink-0">{fmtShortDate(e.event_date)}</span>
             </li>
           ))}
         </ol>
@@ -423,6 +461,8 @@ export default function BookingEditor({ events, onChange, priceList }) {
           onRemove={() => removeEvent(i)}
           onMove={(d) => move(i, d)}
           onDuplicate={() => duplicate(i)}
+          scope={scope}
+          collapsed={collapseEvents}
         />
       ))}
     </div>

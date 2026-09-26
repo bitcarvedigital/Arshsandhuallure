@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase, publicFetch } from '../../lib/supabaseClient'
-import { Field, Btn, ErrorNote, DiamondRule, MicroLabel, Spinner, PasswordField } from '../../shared/ui'
+import { Field, Btn, ErrorNote, Spinner, PasswordField, btnClass } from '../../shared/ui'
 
 // Invite registration: email prefilled & read-only, password entered twice.
 export default function Join() {
@@ -37,47 +37,58 @@ export default function Join() {
   }
 
   return (
-    <div className="min-h-screen bg-beige flex items-center justify-center px-5 font-body">
+    <div className="portal-ui min-h-screen bg-beige font-body flex flex-col items-center justify-center px-6 py-14">
       <Helmet>
         <title>Welcome | Arsh Sandhu Allure</title>
         <meta name="robots" content="noindex" />
       </Helmet>
-      <div className="w-full max-w-sm py-16">
-        <div className="text-center mb-10">
-          <p className="font-heading text-2xl text-dark">Arsh Sandhu Allure</p>
-          <MicroLabel className="mt-3">Your Client Portal</MicroLabel>
-          <DiamondRule className="mt-6" />
-        </div>
+      <div className="w-full max-w-[360px]">
+        {/* same header as the Login page */}
+        <header className="text-center">
+          <Link
+            to="/"
+            className="inline-block font-heading text-[20px] leading-tight tracking-[0.08em] pl-[0.08em] text-dark hover:text-gold transition-colors duration-300"
+          >
+            Arsh Sandhu Allure
+          </Link>
+          <h1 className="font-heading text-[2.6rem] leading-none text-dark mt-0">
+            <em className="text-gold">Welcome</em>
+          </h1>
+          {info?.valid && (
+            <p className="text-sm text-muted mt-8">
+              Hi <span className="font-heading italic text-dark">{info.firstName}</span> — choose a password and
+              your portal is ready.
+            </p>
+          )}
+        </header>
 
         {info === undefined ? (
           <Spinner />
         ) : !info.valid ? (
           <div className="text-center">
-            <p className="text-sm text-[#7A6355] leading-relaxed">
+            <p className="text-sm text-muted mt-8 leading-relaxed">
               {info.registered
                 ? 'Your portal is already set up — you can sign in below.'
                 : 'This link is no longer active. Please ask Arsh for a fresh one — it only takes her a tap.'}
             </p>
-            <Link to="/portal/login">
-              <Btn variant="outline" className="mt-6">Go to Sign In</Btn>
+            <Link to="/portal/login" className={`${btnClass()} w-full mt-12`}>
+              Go to sign in
             </Link>
           </div>
         ) : (
-          <>
-            <p className="text-center text-sm text-[#7A6355] mb-8 leading-relaxed">
-              Welcome, <span className="font-heading italic text-dark">{info.firstName}</span> — choose a
-              password and your portal is ready.
-            </p>
-            <form onSubmit={submit} className="flex flex-col gap-6">
-              <Field label="Email" value={info.email} disabled />
-              <PasswordField label="Choose a password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
-              <PasswordField label="Confirm password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
-              <ErrorNote>{error}</ErrorNote>
-              <Btn type="submit" disabled={busy}>
-                {busy ? 'Setting up…' : 'Create My Login'}
-              </Btn>
-            </form>
-          </>
+          <form onSubmit={submit} className="mt-12 flex flex-col gap-7">
+            <Field label="Email" value={info.email} disabled />
+            <PasswordField label="Choose a password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
+            <PasswordField label="Confirm password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
+            {error && (
+              <div className="-my-2" role="status" aria-live="polite">
+                <ErrorNote>{error}</ErrorNote>
+              </div>
+            )}
+            <Btn type="submit" disabled={busy} className="w-full mt-1">
+              {busy ? 'Setting up…' : 'Create my login'}
+            </Btn>
+          </form>
         )}
       </div>
     </div>

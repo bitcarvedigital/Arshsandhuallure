@@ -4,14 +4,17 @@ import { sendEmail, esc } from './_lib/email.js'
 import { isUuid, str } from './_lib/validate.js'
 import { loadBooking } from './_lib/booking.js'
 import { renderInvoicePdf } from './_lib/invoicePdf.js'
+import { renderTimelinePdf, cleanTimelineContent } from './_lib/timelinePdf.js'
 import { buildStatement } from '../src/shared/booking/pricing.js'
 
-// One function for everything invoice-related (the Vercel Hobby plan allows
-// 12 functions per deployment, so these share a door):
-//   action 'send'     studio → create from the live booking + email it
+// One function for the studio's PDFs (the Vercel Hobby plan allows 12
+// functions per deployment, so these share a door):
+//   action 'send'     studio → create an invoice from the live booking + email it
 //   action 'resend'   studio → email an existing invoice again
-//   action 'preview'  studio → PDF of a draft, nothing saved
+//   action 'preview'  studio → invoice PDF of a draft, nothing saved
 //   action 'download' studio (any invoice) or the owning client (issued only)
+//   action 'timeline' studio → the getting-ready timeline as a PDF: downloaded,
+//                     or (email: true) emailed to the studio instead — never both by surprise
 
 const money = (v) => `$${Number(v || 0).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 const shortDate = (d) =>
@@ -142,6 +145,38 @@ export default async function handler(req, res) {
     }
     const result = await emailInvoice(admin, invoice, client)
     return send(res, 200, { invoice, ...result })
+  }
+
+  if (action === 'timeline') {
+    if (!isUuid(body.clientId) || !isUuid(body.eventId)) return send(res, 400, { error: 'Invalid event' })
+    const { data: client } = await admin.from('clients').select('id, full_name').eq('id', body.clientId).maybeSingle()
+    const { data: event } = await admin.from('events').select('*').eq('id', body.eventId).eq('client_id', body.clientId).maybeSingle()
+    if (!client || !event) return send(res, 404, { error: 'Event not found' })
+    // what's on her screen (may be unsaved), else the saved timeline
+    let content = body.content
+    if (!content) {
+      const { data: row } = await admin.from('event_timelines').select('content').eq('event_id', event.id).maybeSingle()
+      content = row?.content
+    }
+    if (!content) return send(res, 400, { error: 'Build the timeline first' })
+    const buf = await renderTimelinePdf({ client, event, content: cleanTimelineContent(content) })
+    const title = `${event.name || event.event_type || 'Event'} · ${shortDate(event.event_date)}`
+    const filename = `Timeline-${client.full_name}-${event.name || event.event_type || 'event'}.pdf`
+
+    // "Email to studio" is its own button; saving a PDF never emails anyone
+    if (body.email === true) {
+      const { data: setting } = await admin.from('app_settings').select('value').eq('key', 'notification_email').maybeSingle()
+      const to = setting?.value || 'arshsandhuallure@gmail.com'
+      const r = await sendEmail({
+        to,
+        subject: `Getting-ready timeline — ${client.full_name} · ${title}`,
+        heading: 'Getting-ready timeline',
+        bodyHtml: `<p>The ${esc(event.name || event.event_type || 'event')} timeline for <strong>${esc(client.full_name)}</strong> (${esc(shortDate(event.event_date))}) is attached as a PDF.</p>`,
+        attachments: [{ filename: filename.replace(/[^\w.-]+/g, '-'), content: buf.toString('base64') }],
+      })
+      return r.skipped ? send(res, 502, { error: 'The email couldn’t be sent right now — try again in a minute.' }) : send(res, 200, { emailedTo: to })
+    }
+    return sendPdf(res, buf, filename)
   }
 
   return send(res, 400, { error: 'Unknown action' })

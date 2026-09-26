@@ -81,7 +81,7 @@ export function renderInvoicePdf({ invoice = {}, snapshot = {} }) {
   doc.font('display').fontSize(26).fillColor(INK).text('Invoice', M, 38, { width: CW, align: 'right' })
   doc.font('medium').fontSize(10).fillColor(INK).text(invoice.number || 'PREVIEW', M, 72, { width: CW, align: 'right' })
   doc.font('body').fontSize(8.5).fillColor(MUTED)
-    .text(`Issued ${shortDate(invoice.issued_on || new Date().toISOString())}`, M, 88, { width: CW, align: 'right' })
+    .text(`Issued ${shortDate(invoice.issued_on || new Date().toLocaleDateString('en-CA', { timeZone: 'America/Toronto' }))}`, M, 88, { width: CW, align: 'right' })
   if (snapshot.due_on) doc.text(`Due ${shortDate(snapshot.due_on)}`, M, 100, { width: CW, align: 'right' })
   doc.moveTo(M, 132).lineTo(M + CW, 132).lineWidth(1).strokeColor(GOLD).stroke()
 

@@ -1,4 +1,4 @@
-// Pre-made sample timelines. Applying one sets the chairs + timing and
+// Pre-made sample timelines. Applying one sets the artists + timing and
 // arranges the event's booked people onto them (or sample bricks when the
 // event has no services priced yet).
 
@@ -12,7 +12,7 @@ export const TEMPLATES = [
     columns: ['Arsh'],
     strategy: 'single',
     mode: 'ready_by',
-    sample: [{ service: 'both', minutes: 150, bride: true }],
+    sample: [{ service: 'both', minutes: 60, bride: true }],
   },
   {
     id: 'bride_3',
@@ -21,7 +21,7 @@ export const TEMPLATES = [
     columns: ['Arsh'],
     strategy: 'single',
     mode: 'ready_by',
-    sample: [...p('both', 75, 3), { service: 'both', minutes: 150, bride: true }],
+    sample: [...p('both', 60, 3), { service: 'both', minutes: 60, bride: true }],
   },
   {
     id: 'bride_6_two',
@@ -30,7 +30,7 @@ export const TEMPLATES = [
     columns: ['Arsh', 'Assistant'],
     strategy: 'split',
     mode: 'ready_by',
-    sample: [...p('both', 75, 6), { service: 'both', minutes: 150, bride: true }],
+    sample: [...p('both', 60, 6), { service: 'both', minutes: 60, bride: true }],
   },
   {
     id: 'party_makeup',
@@ -39,15 +39,15 @@ export const TEMPLATES = [
     columns: ['Arsh', 'Assistant'],
     strategy: 'split',
     mode: 'start_at',
-    sample: [...p('makeup', 45, 6), { service: 'makeup', minutes: 90, bride: true }],
+    sample: [...p('makeup', 60, 6), { service: 'makeup', minutes: 60, bride: true }],
   },
   {
     id: 'teams',
     name: 'Hair team + makeup team',
-    desc: 'A hair chair and a makeup chair — people rotate between them.',
+    desc: 'A hair artist and a makeup artist working together — people rotate between them.',
     columns: ['Hair', 'Makeup'],
     strategy: 'teams',
     mode: 'ready_by',
-    sample: [...p('both', 90, 4), { service: 'both', minutes: 150, bride: true }],
+    sample: [...p('both', 60, 4), { service: 'both', minutes: 60, bride: true }],
   },
 ]

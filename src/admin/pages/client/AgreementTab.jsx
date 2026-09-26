@@ -1,4 +1,4 @@
-import { Btn, StatusChip, FormSection, InfoRow, money } from '../../../shared/ui'
+import { Btn, StatusChip, FormSection, InfoRow, MicroLabel, money, softNote, fmtDateTime } from '../../../shared/ui'
 import { summarizeBooking } from '../../../shared/booking/pricing.js'
 import FeeSchedule from '../../../shared/booking/FeeSchedule'
 import EventCards from '../../../shared/booking/EventCards'
@@ -9,7 +9,7 @@ export default function AgreementTab({ agreement, events, lines, client, reload 
     const summary = summarizeBooking(events, lines, [])
     return (
       <div>
-        <p className="text-sm text-[#A89080] border border-dashed border-[#C8B8AC] p-6 text-center mb-10">
+        <p className={`${softNote} mb-12`}>
           Not signed yet — she signs in her portal. Below is exactly what she will see.
         </p>
         <FormSection title="Her booking">
@@ -27,20 +27,18 @@ export default function AgreementTab({ agreement, events, lines, client, reload 
 
   const s = agreement.snapshot || {}
   const v2 = s.schema === 2
+  const confirmed = agreement.status === 'approved'
   return (
     <div>
-      <div className="flex items-center justify-between gap-3 flex-wrap mb-8">
-        <p className="text-[10px] tracking-[0.35em] uppercase text-gold">Signed agreement · v{agreement.version}</p>
-        <StatusChip
-          status={agreement.status === 'approved' ? 'done' : 'pending'}
-          label={agreement.status === 'approved' ? 'Confirmed' : 'Awaiting your confirmation'}
-        />
+      <div className="flex items-center justify-between gap-3 flex-wrap mb-10">
+        <MicroLabel>Signed agreement · v{agreement.version}</MicroLabel>
+        <StatusChip status={confirmed ? 'done' : 'pending'} label={confirmed ? 'Confirmed' : 'Awaiting your confirmation'} />
       </div>
 
       <FormSection title="Signature record">
-        <div>
+        <div className="-mt-2">
           <InfoRow label="Signed by" value={<span className="font-heading italic">{agreement.signed_name}</span>} />
-          <InfoRow label="Signed at" value={new Date(agreement.signed_at).toLocaleString('en-CA')} />
+          <InfoRow label="Signed at" value={fmtDateTime(agreement.signed_at)} />
           <InfoRow label="Photo consent" value={agreement.photo_consent === 'agrees' ? 'Agrees' : 'Does not agree'} />
           <InfoRow label="IP address" value={agreement.ip_address || '—'} />
         </div>
@@ -50,7 +48,7 @@ export default function AgreementTab({ agreement, events, lines, client, reload 
         {v2 ? (
           <FeeSchedule events={s.events || []} totals={s.totals || {}} />
         ) : (
-          <div>
+          <div className="-mt-2">
             <InfoRow label="Professional services" value={money(s.amount_services)} />
             <InfoRow label="Travel" value={money(s.amount_travel)} />
             <InfoRow label="Total" value={money(s.amount_total)} />
@@ -60,16 +58,18 @@ export default function AgreementTab({ agreement, events, lines, client, reload 
         )}
       </FormSection>
 
-      {agreement.status !== 'approved' && (
-        <Btn
-          variant="gold"
-          onClick={async () => {
-            await review('agreement', agreement.id, 'approved')
-            reload()
-          }}
-        >
-          Confirm agreement
-        </Btn>
+      {!confirmed && (
+        <div className="flex flex-col items-start gap-3">
+          <Btn
+            onClick={async () => {
+              await review('agreement', agreement.id, 'approved')
+              reload()
+            }}
+          >
+            Confirm agreement
+          </Btn>
+          <p className="text-xs text-faint">Her portal then shows it as signed &amp; confirmed.</p>
+        </div>
       )}
     </div>
   )

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import PhotoUploader from './PhotoUploader'
-import { Field, TextArea, ChoiceRow, FormSection, AutofillWrap, fmtShortDate } from './ui'
+import { Field, TextArea, ChoiceRow, FormSection, AutofillWrap, fmtShortDate, softNote } from './ui'
 import {
   SERVICES, SERVICE_LABELS, SKIN_TYPES, HAIR_LENGTHS, HAIR_TEXTURES, relevantSections,
 } from './booking/services.js'
@@ -76,7 +76,8 @@ export default function MemberProfileForm({
 
       {showEvents && events.length > 1 && (
         <FormSection title="Events you’re getting ready for" hint="Tap every event you’ll be styled at.">
-          <div className="flex flex-wrap gap-2">
+          {/* multi-select pills, same look as ChoiceRow (selected = dark) */}
+          <div role="group" aria-label="Events you’re getting ready for" className="flex flex-wrap gap-2">
             {events.map((e) => {
               const on = eventIds.includes(e.id)
               return (
@@ -84,12 +85,14 @@ export default function MemberProfileForm({
                   key={e.id}
                   type="button"
                   disabled={disabled}
+                  aria-pressed={on}
                   onClick={() => toggleEvent(e.id)}
-                  className={`px-4 py-2.5 text-xs tracking-[0.12em] uppercase border transition-colors ${
-                    on ? 'border-gold bg-gold text-beige' : 'border-[#A89080] text-dark hover:border-gold'
+                  className={`rounded-full px-4 py-2.5 text-sm transition-colors duration-200 ${
+                    on ? 'bg-dark text-beige' : 'bg-beige-card/70 text-dark hover:bg-[#E3D6C8]'
                   } ${disabled ? 'opacity-50 cursor-default' : 'cursor-pointer'}`}
                 >
-                  {(e.name || e.event_type || 'Event')} · {fmtShortDate(e.event_date)}
+                  {e.name || e.event_type || 'Event'}
+                  <span className={on ? 'text-beige/70' : 'text-muted'}> · {fmtShortDate(e.event_date)}</span>
                 </button>
               )
             })}
@@ -104,7 +107,7 @@ export default function MemberProfileForm({
         <AutofillWrap state={marker('services')} onAcknowledge={ack('services')} readOnly={studio}>
           {single ? (
             <p className="text-sm text-dark">
-              {SERVICE_LABELS[single]} <span className="text-[#8A7A70]">— that’s what this booking includes.</span>
+              {SERVICE_LABELS[single]} <span className="text-faint">— that’s what this booking includes.</span>
             </p>
           ) : (
             <ChoiceRow
@@ -116,9 +119,7 @@ export default function MemberProfileForm({
           )}
         </AutofillWrap>
         {!sections.chosen && (
-          <p className="text-xs text-[#8A7A70] border border-dashed border-[#C8B8AC] px-4 py-3">
-            Choose a service above and your questions will appear.
-          </p>
+          <p className={softNote}>Choose a service above and your questions will appear.</p>
         )}
       </FormSection>
 

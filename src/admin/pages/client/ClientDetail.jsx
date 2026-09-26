@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../../lib/supabaseClient'
 import { AdminShell } from '../../AdminShell'
-import { Spinner, StatusChip, fmtShortDate } from '../../../shared/ui'
+import { Spinner, StatusChip, fmtShortDate, Pill, emptyNote } from '../../../shared/ui'
+import { PageHeader } from '../../adminUi'
 import { parsePriceList } from '../../../shared/booking/services.js'
 import { sortEvents } from '../../../shared/booking/pricing.js'
 import OverviewTab from './OverviewTab'
@@ -14,6 +15,15 @@ import PaymentsTab from './PaymentsTab'
 import NotesTab from './NotesTab'
 
 const TABS = ['overview', 'intake', 'agreement', 'timeline', 'docs', 'payments', 'notes']
+const TAB_LABELS = {
+  overview: 'Overview',
+  intake: 'Intake',
+  agreement: 'Agreement',
+  timeline: 'Timeline',
+  docs: 'Docs',
+  payments: 'Payments',
+  notes: 'Notes',
+}
 
 export default function ClientDetail() {
   const { id } = useParams()
@@ -21,6 +31,7 @@ export default function ClientDetail() {
   const tab = TABS.includes(searchParams.get('tab')) ? searchParams.get('tab') : 'overview'
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
+  const tabsRef = useRef(null)
 
   const load = useCallback(async () => {
     const [client, notes, intakes, members, agreement, docs, payments, events, lines, timelines, invoices, settings] =
@@ -64,10 +75,25 @@ export default function ClientDetail() {
     load()
   }, [load])
 
+  // on a phone, keep the chosen tab in view (e.g. arriving from Review with ?tab=intake)
+  useEffect(() => {
+    const bar = tabsRef.current
+    const el = bar?.querySelector('[aria-selected="true"]')
+    if (!bar || !el) return
+    if (el.offsetLeft < bar.scrollLeft || el.offsetLeft + el.offsetWidth > bar.scrollLeft + bar.clientWidth - 40) {
+      bar.scrollTo({ left: Math.max(0, el.offsetLeft - 16), behavior: 'smooth' })
+    }
+  }, [tab, data])
+
   if (error) {
     return (
       <AdminShell title="Client">
-        <p className="text-sm text-[#7A6355]">{error} <Link to="/admin" className="text-gold underline">Back to clients</Link></p>
+        <div className={emptyNote}>
+          {error}{' '}
+          <Link to="/admin" className="text-dark underline underline-offset-4 hover:text-gold">
+            Back to clients
+          </Link>
+        </div>
       </AdminShell>
     )
   }
@@ -87,41 +113,72 @@ export default function ClientDetail() {
 
   return (
     <AdminShell title={client.full_name} wide={tab === 'timeline'}>
-      <div className="mb-2">
-        <Link to="/admin" className="text-xs tracking-[0.2em] uppercase text-[#8A7A70] hover:text-gold">
-          ← All clients
-        </Link>
-      </div>
-      <div className="flex items-center gap-3 flex-wrap">
-        <h1 className="font-heading text-3xl text-dark">{client.full_name}</h1>
-        {client.status === 'archived' && <StatusChip status="locked" label="Archived" />}
-      </div>
-      <p className="text-sm text-[#7A6355] mt-1">{client.email}</p>
-      {sorted.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-3">
-          {sorted.map((e) => (
-            <span key={e.id} className="text-[10px] tracking-[0.15em] uppercase border border-[#C8B8AC] px-2.5 py-1 text-dark">
-              {e.name || e.event_type} · {fmtShortDate(e.event_date)}
-            </span>
+      <PageHeader
+        className="!mb-0"
+        back={{ to: '/admin', label: 'All clients' }}
+        eyebrow="Client"
+        title={
+          <span className="inline-flex items-center gap-3 flex-wrap">
+            {client.full_name}
+            {client.status === 'archived' && (
+              <span className="font-body leading-none">
+                <StatusChip status="locked" label="Archived" />
+              </span>
+            )}
+          </span>
+        }
+        meta={
+          <>
+            <p className="text-sm text-muted mt-2 flex flex-wrap gap-x-2">
+              <a href={`mailto:${client.email}`} className="hover:text-gold transition-colors break-all">{client.email}</a>
+              {client.phone && (
+                <>
+                  <span aria-hidden="true" className="text-faint">·</span>
+                  <a href={`tel:${client.phone}`} className="hover:text-gold transition-colors whitespace-nowrap">{client.phone}</a>
+                </>
+              )}
+            </p>
+            {sorted.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {sorted.map((e) => (
+                  <Pill key={e.id}>
+                    {e.name || e.event_type} · {fmtShortDate(e.event_date)}
+                  </Pill>
+                ))}
+              </div>
+            )}
+          </>
+        }
+      />
+
+      {/* tabs: scroll sideways on a phone; the fade hints there are more */}
+      <div className="mt-10 border-b border-line">
+        <div
+          role="tablist"
+          aria-label="Client sections"
+          ref={tabsRef}
+          className="-mb-px flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [mask-image:linear-gradient(to_right,black_calc(100%_-_2.5rem),transparent)] sm:[mask-image:none]"
+        >
+          {TABS.map((t) => (
+            <button
+              key={t}
+              type="button"
+              role="tab"
+              aria-selected={tab === t}
+              onClick={() => setSearchParams({ tab: t })}
+              className={`shrink-0 px-3 sm:px-4 py-3 text-[11px] tracking-[0.2em] uppercase whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
+                tab === t ? 'text-dark border-gold' : 'text-faint border-transparent hover:text-dark'
+              }`}
+            >
+              {TAB_LABELS[t]}
+            </button>
           ))}
+          {/* lets the last tab scroll clear of the fade */}
+          <span aria-hidden="true" className="shrink-0 w-10 sm:hidden" />
         </div>
-      )}
-
-      <div className="flex gap-1 mt-8 border-b border-[#C8B8AC] overflow-x-auto">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            onClick={() => setSearchParams({ tab: t })}
-            className={`px-4 py-3 text-[11px] tracking-[0.2em] uppercase whitespace-nowrap transition-colors cursor-pointer ${
-              tab === t ? 'text-gold border-b-2 border-gold -mb-px' : 'text-[#8A7A70] hover:text-dark'
-            }`}
-          >
-            {t}
-          </button>
-        ))}
       </div>
 
-      <div className="py-8">
+      <div className="pt-10 pb-4">
         {tab === 'overview' && <OverviewTab key={bookingKey} {...props} />}
         {tab === 'intake' && <IntakeTab {...props} />}
         {tab === 'agreement' && <AgreementTab {...props} />}

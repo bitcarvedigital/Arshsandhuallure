@@ -1,10 +1,18 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
-import { Btn, cellInputClass } from '../../shared/ui'
+import { Btn, cellInputClass, metaLabelClass } from '../../shared/ui'
 import { parsePriceList } from '../../shared/booking/services.js'
+import { SaveNote, isFailure, iconRemoveBtn } from '../adminUi'
 
+// column labels: shown once as a header row on wider screens, per row on a phone
 function SmallLabel({ children }) {
-  return <span className="text-[10px] tracking-[0.2em] uppercase text-[#8A7A70]">{children}</span>
+  return <span className={`${metaLabelClass} sm:sr-only`}>{children}</span>
+}
+
+// same grid for the header row and every item row, so the columns line up
+const GRID = {
+  service: 'grid-cols-[minmax(0,1fr)_6rem_2.25rem] sm:grid-cols-[minmax(0,1fr)_7.5rem_4.5rem_6.5rem_2.25rem]',
+  other: 'grid-cols-[minmax(0,1fr)_6rem_2.25rem] sm:grid-cols-[minmax(0,1fr)_6.5rem_2.25rem]',
 }
 
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 40) || 'item'
@@ -48,25 +56,41 @@ export default function PriceListEditor() {
   }
 
   const groups = [
-    ['service', 'Services (price per person)'],
-    ['fee', 'Fees'],
-    ['discount', 'Discounts'],
+    ['service', 'Services', 'price per person'],
+    ['fee', 'Fees', null],
+    ['discount', 'Discounts', null],
   ]
 
   return (
-    <div className="flex flex-col gap-8">
-      {groups.map(([kind, title]) => (
-        <div key={kind}>
-          <p className="text-[10px] tracking-[0.25em] uppercase text-gold mb-2">{title}</p>
-          {list.map((x, i) =>
-            x.kind !== kind ? null : (
-              <div key={x.code || i} className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_auto_auto_auto_auto] gap-x-3 gap-y-1 items-end border-b border-[#EFE6DA] py-2">
+    <div className="flex flex-col gap-10">
+      {groups.map(([kind, title, sub]) => {
+        const rows = list.map((x, i) => [x, i]).filter(([x]) => x.kind === kind)
+        const grid = kind === 'service' ? GRID.service : GRID.other
+        const priceLabel = kind === 'discount' ? 'Amount off ($)' : 'Price ($)'
+        return (
+          <div key={kind}>
+            <h3 className="font-heading text-lg text-dark">
+              {title}
+              {sub && <span className="font-body text-sm text-faint"> · {sub}</span>}
+            </h3>
+            {rows.length > 0 && (
+              <div className={`hidden sm:grid ${grid} gap-x-4 mt-4 pb-2 border-b border-line`} aria-hidden="true">
+                <span className={metaLabelClass}>Name</span>
+                {kind === 'service' && <span className={metaLabelClass}>Type</span>}
+                {kind === 'service' && <span className={metaLabelClass}>Mins</span>}
+                <span className={metaLabelClass}>{priceLabel}</span>
+                <span />
+              </div>
+            )}
+            {rows.length === 0 && <p className="text-sm text-faint mt-3">None yet.</p>}
+            {rows.map(([x, i]) => (
+              <div key={x.code || i} className={`grid ${grid} gap-x-4 gap-y-3 items-end border-b border-line py-3`}>
                 <label className="flex flex-col gap-1 min-w-0">
                   <SmallLabel>Name</SmallLabel>
                   <input className={cellInputClass} value={x.label} onChange={(e) => set(i, { label: e.target.value })} placeholder="e.g. Party Makeup" />
                 </label>
                 {kind === 'service' && (
-                  <label className="w-28 hidden sm:flex flex-col gap-1">
+                  <label className="flex flex-col gap-1 min-w-0 order-1 sm:order-none">
                     <SmallLabel>Type</SmallLabel>
                     <select className={cellInputClass + ' cursor-pointer'} value={x.service || ''} onChange={(e) => set(i, { service: e.target.value || null })}>
                       <option value="hair">Hair</option>
@@ -77,26 +101,30 @@ export default function PriceListEditor() {
                   </label>
                 )}
                 {kind === 'service' && (
-                  <label className="w-16 hidden sm:flex flex-col gap-1">
+                  <label className="flex flex-col gap-1 min-w-0 order-1 sm:order-none">
                     <SmallLabel>Mins</SmallLabel>
-                    <input className={cellInputClass} type="number" min="0" step="5" value={x.minutes ?? ''} onChange={(e) => set(i, { minutes: e.target.value })} />
+                    <input className={cellInputClass} type="number" min="0" step="5" inputMode="numeric" value={x.minutes ?? ''} onChange={(e) => set(i, { minutes: e.target.value })} />
                   </label>
                 )}
-                <label className="w-24 flex flex-col gap-1">
-                  <SmallLabel>{kind === 'discount' ? 'Default off' : 'Price ($)'}</SmallLabel>
-                  <input className={cellInputClass} type="number" min="0" step="0.01" inputMode="decimal" value={x.price ?? ''} onChange={(e) => set(i, { price: e.target.value })} placeholder="—" />
+                <label className="flex flex-col gap-1 min-w-0">
+                  <SmallLabel>{priceLabel}</SmallLabel>
+                  <input className={cellInputClass + ' tabular-nums'} type="number" min="0" step="0.01" inputMode="decimal" value={x.price ?? ''} onChange={(e) => set(i, { price: e.target.value })} placeholder="—" />
                 </label>
-                <button type="button" onClick={() => remove(i)} aria-label={`Remove ${x.label}`} className="text-[#8A7A70] hover:text-[#8a3a2a] text-lg px-1 pb-2 cursor-pointer">×</button>
+                <button type="button" onClick={() => remove(i)} aria-label={`Remove ${x.label || 'this item'}`} className={`${iconRemoveBtn} justify-self-end -mr-2`}>
+                  ×
+                </button>
               </div>
-            ),
-          )}
-          <button type="button" onClick={() => add(kind)} className="mt-2 text-[10px] tracking-[0.2em] uppercase text-gold hover:underline cursor-pointer">
-            + Add {kind === 'service' ? 'a service' : kind === 'fee' ? 'a fee' : 'a discount'}
-          </button>
-        </div>
-      ))}
-      {msg && <p className="text-gold text-sm">{msg}</p>}
-      <Btn className="self-start" onClick={save}>Save price list</Btn>
+            ))}
+            <Btn type="button" variant="outline" size="sm" className="mt-4" onClick={() => add(kind)}>
+              + Add {kind === 'service' ? 'a service' : kind === 'fee' ? 'a fee' : 'a discount'}
+            </Btn>
+          </div>
+        )
+      })}
+      <div className="flex items-center gap-4 flex-wrap">
+        <Btn size="sm" onClick={save}>Save price list</Btn>
+        <SaveNote error={isFailure(msg)}>{msg}</SaveNote>
+      </div>
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase, authedFetch } from '../../../lib/supabaseClient'
-import { Field, ChoiceRow, Btn, FormSection, money } from '../../../shared/ui'
+import { Field, ChoiceRow, Btn, FormSection, SectionsProvider, money, softNote, fieldClass } from '../../../shared/ui'
 import { bookingFromLegacyClient } from '../../../shared/booking/pricing.js'
 import BookingEditor, { BookingSummary, toEditable, toPayload } from './BookingEditor'
 
@@ -21,6 +21,7 @@ export default function OverviewTab({ client, notes, events, lines, payments, ag
   const [err, setErr] = useState('')
   const [invite, setInvite] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [copied, setCopied] = useState(false)
   const navigate = useNavigate()
 
   const touch = (fn) => (...args) => {
@@ -87,86 +88,124 @@ export default function OverviewTab({ client, notes, events, lines, payments, ag
     }
   }
 
+
+  const firstName = client.full_name.split(' ')[0]
+
   return (
-    <div className="pb-24">
-      {changedSinceSigning && (
-        <div className="border-l-2 border-[#8a3a2a] bg-[#F6E8E2] px-5 py-4 mb-10 text-sm text-[#5A2A1A]">
-          The booking total has changed since {client.full_name.split(' ')[0]} signed her agreement
-          ({money(signedTotal)} → {money(client.amount_total)}). Her signed agreement still shows the earlier amount —
-          let her know about the change.
-        </div>
-      )}
-
-      <FormSection title="Client details">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <Field label="Full name" required value={details.full_name} onChange={setDetail('full_name')} />
-          <Field label="Phone" type="tel" value={details.phone} onChange={setDetail('phone')} placeholder="+1 (000) 000-0000" />
-        </div>
-        <Field label="Email" type="email" value={details.email} onChange={setDetail('email')} disabled={!!client.user_id} />
-        {client.user_id && (
-          <p className="text-xs text-[#8A7A70] -mt-3">Her email is her login, so it can’t be changed after she registers.</p>
-        )}
-      </FormSection>
-
-      <FormSection title="Portal access">
-        {client.user_id ? (
-          <p className="text-sm text-[#4a6741]">Registered — she can sign in ✓</p>
-        ) : invite?.inviteUrl ? (
-          <div>
-            <input readOnly value={invite.inviteUrl} onFocus={(e) => e.target.select()} className="w-full bg-transparent border-b border-[#A89080] py-2 text-sm text-dark focus:outline-none" />
-            <Btn className="mt-3 !px-4 !py-2.5" onClick={() => navigator.clipboard.writeText(invite.inviteUrl).catch(() => {})}>
-              Copy link
-            </Btn>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <p className="text-sm text-[#7A6355]">Not registered yet.</p>
-            <Btn variant="gold" className="!px-4 !py-2.5" onClick={reissue} disabled={busy}>
-              {busy ? '…' : 'New invite link'}
-            </Btn>
+    <SectionsProvider>
+      <div className="pb-24">
+        {changedSinceSigning && (
+          <div className={`${softNote} mb-12 flex items-start gap-3`} role="note">
+            <span className="w-1.5 h-1.5 rounded-full bg-danger shrink-0 mt-2" aria-hidden="true" />
+            <p>
+              <span className="text-dark">The booking total has changed since {firstName} signed her agreement</span>{' '}
+              ({money(signedTotal)} → {money(client.amount_total)}). Her signed agreement still shows the earlier amount —
+              let her know about the change.
+            </p>
           </div>
         )}
-      </FormSection>
 
-      <FormSection title="Client type" hint="Only you see this.">
-        <ChoiceRow
-          options={[
-            { value: 'easy', label: 'Easy' },
-            { value: 'medium', label: 'Medium' },
-            { value: 'hard', label: 'Hard' },
-          ]}
-          value={difficulty}
-          onChange={touch(setDifficulty)}
-        />
-      </FormSection>
+        <FormSection title="Client details">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <Field label="Full name" required value={details.full_name} onChange={setDetail('full_name')} />
+            <Field label="Phone" type="tel" value={details.phone} onChange={setDetail('phone')} placeholder="+1 (000) 000-0000" />
+          </div>
+          <div className="flex flex-col gap-3">
+            <Field label="Email" type="email" value={details.email} onChange={setDetail('email')} disabled={!!client.user_id} />
+            {client.user_id && (
+              <p className="text-xs text-faint">Her email is her login, so it can’t be changed after she registers.</p>
+            )}
+          </div>
+        </FormSection>
 
-      <BookingEditor events={booking} onChange={touch(setBooking)} priceList={priceList} />
+        <FormSection title="Portal access">
+          {client.user_id ? (
+            <p className="text-sm text-success">Registered — she can sign in ✓</p>
+          ) : invite?.inviteUrl ? (
+            <div className="flex flex-col gap-3">
+              <label htmlFor="reissued-invite" className="text-xs text-faint">
+                New invite link — also emailed to her, valid for 7 days.
+              </label>
+              <input id="reissued-invite" readOnly value={invite.inviteUrl} onFocus={(e) => e.target.select()} className={fieldClass} />
+              <Btn
+                size="sm"
+                variant="outline"
+                className="self-start"
+                onClick={() =>
+                  navigator.clipboard
+                    .writeText(invite.inviteUrl)
+                    .then(() => {
+                      setCopied(true)
+                      setTimeout(() => setCopied(false), 2000)
+                    })
+                    .catch(() => {})
+                }
+              >
+                {copied ? 'Copied ✓' : 'Copy link'}
+              </Btn>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <p className="text-sm text-muted">Not registered yet.</p>
+              <Btn variant="outline" size="sm" onClick={reissue} disabled={busy}>
+                {busy ? '…' : 'New invite link'}
+              </Btn>
+            </div>
+          )}
+        </FormSection>
 
-      <FormSection title="Booking summary" hint="All events together. Updates as you type; saved when you press Save.">
-        <BookingSummary events={booking} payments={payments} />
-      </FormSection>
+        <FormSection title="Client type" hint="Only you see this.">
+          <ChoiceRow
+            options={[
+              { value: 'easy', label: 'Easy' },
+              { value: 'medium', label: 'Medium' },
+              { value: 'hard', label: 'Hard' },
+            ]}
+            value={difficulty}
+            onChange={touch(setDifficulty)}
+          />
+        </FormSection>
 
-      <FormSection title="Manage client">
-        <div className="flex flex-wrap gap-3">
-          <Btn variant="outline" onClick={archive}>
-            {client.status === 'archived' ? 'Restore client' : 'Archive client'}
-          </Btn>
-          <Btn variant="danger" onClick={hardDelete} disabled={busy}>
-            Delete permanently
-          </Btn>
-        </div>
-      </FormSection>
+        <BookingEditor events={booking} onChange={touch(setBooking)} priceList={priceList} scope={client.id} collapseEvents />
 
-      <div className="fixed bottom-0 inset-x-0 z-30 bg-[#EDE5DD]/95 backdrop-blur border-t border-[#C8B8AC] print:hidden">
-        <div className="max-w-4xl mx-auto px-5 py-3 flex items-center justify-between gap-4">
-          <p className="text-xs text-[#7A6355] min-w-0">
-            {err ? <span className="text-[#8a3a2a]">{err}</span> : dirty ? 'Unsaved changes' : msg || 'All changes saved'}
-          </p>
-          <Btn onClick={save} disabled={busy || !dirty} className="!px-6 !py-3 shrink-0">
-            {busy ? 'Saving…' : 'Save booking'}
-          </Btn>
+        <FormSection title="Booking summary" hint="All events together. Updates as you type; saved when you press Save.">
+          <BookingSummary events={booking} payments={payments} />
+        </FormSection>
+
+        <FormSection
+          title="Manage client"
+          hint="Archiving moves her out of your upcoming list — you can restore her any time. Deleting erases everything for good."
+        >
+          <div className="flex flex-wrap gap-3">
+            <Btn variant="outline" size="sm" onClick={archive}>
+              {client.status === 'archived' ? 'Restore client' : 'Archive client'}
+            </Btn>
+            <Btn variant="danger" size="sm" onClick={hardDelete} disabled={busy}>
+              Delete permanently
+            </Btn>
+          </div>
+        </FormSection>
+
+        <div className="fixed bottom-0 inset-x-0 z-30 bg-beige/95 backdrop-blur border-t border-line print:hidden">
+          <div className="max-w-4xl mx-auto px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex items-center justify-between gap-4">
+            <p className="text-xs min-w-0 flex items-center gap-2" role="status">
+              {err ? (
+                <span className="text-danger">{err}</span>
+              ) : dirty ? (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold shrink-0" aria-hidden="true" />
+                  <span className="text-dark">Unsaved changes</span>
+                </>
+              ) : (
+                <span className="text-muted">{msg || 'All changes saved'}</span>
+              )}
+            </p>
+            <Btn size="sm" onClick={save} disabled={busy || !dirty} className="shrink-0">
+              {busy ? 'Saving…' : 'Save booking'}
+            </Btn>
+          </div>
         </div>
       </div>
-    </div>
+    </SectionsProvider>
   )
 }

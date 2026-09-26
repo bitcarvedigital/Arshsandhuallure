@@ -6,7 +6,7 @@ import { signedPhotoUrl } from '../lib/data'
 import PortalShell from '../../shared/PortalShell'
 import GuidePage from '../../shared/GuidePage'
 import { hairGuide, skinGuide } from '../../shared/content/guides'
-import { Spinner } from '../../shared/ui'
+import { Spinner, emptyNote } from '../../shared/ui'
 import TimelineView from '../../shared/booking/TimelineView'
 import { sortEvents } from '../../shared/booking/pricing.js'
 
@@ -50,16 +50,14 @@ export default function DocView() {
   return (
     <PortalShell title={titles[docType] || 'Document'} nav={NAV} onSignOut={signOut}>
       <div className="mb-6 print:hidden">
-        <Link to="/portal/docs" className="text-xs tracking-[0.2em] uppercase text-[#8A7A70] hover:text-gold">
+        <Link to="/portal/docs" className="inline-block py-3 -my-3 text-[11px] tracking-[0.2em] uppercase text-faint hover:text-gold transition-colors">
           ← All documents
         </Link>
       </div>
       {doc === undefined ? (
         <Spinner />
       ) : !doc ? (
-        <p className="text-sm text-[#A89080] border border-dashed border-[#C8B8AC] p-8 text-center">
-          This document isn’t available yet — it unlocks as your journey progresses.
-        </p>
+        <p className={emptyNote}>This document isn’t available yet — it unlocks as your journey progresses.</p>
       ) : docType === 'hair_guide' ? (
         <GuidePage guide={hairGuide} />
       ) : docType === 'skin_guide' ? (

@@ -17,9 +17,35 @@ export const EVENT_TYPES = [
 
 // Relations offered on timeline bricks (free text is always allowed too).
 export const RELATIONS = [
-  'Bride', 'Groom', 'Mother', 'Sister', 'Sister-in-law', 'Cousin', 'Aunt', 'Grandmother',
-  'Friend', 'Bridesmaid', 'Flower girl', 'Guest',
+  'Bride', 'Groom', 'Mother of the bride', 'Mother of the groom', 'Maid of honour',
+  'Sister', 'Sister-in-law', 'Cousin', 'Aunt', 'Grandmother', 'Friend', 'Bridesmaid', 'Flower girl', 'Guest',
 ]
+
+// These relations are starred as important automatically (Bhagesh, 2026-09-26).
+// A plain "Mother" from the bride's own party counts as the mother of the bride.
+const STARRED = new Set([
+  'bride', 'groom', 'mother of the bride', 'mother of the groom', 'maid of honour', 'maid of honor', 'mother', 'mom', 'mum',
+])
+export const isStarredRelation = (relation) => STARRED.has(String(relation || '').trim().toLowerCase())
+
+// Which side a relation belongs to (Bhagesh, 2026-09-26): picking it moves the
+// person to that side; anything else leaves their side as it was (null).
+const BRIDE_SIDE = new Set(['bride', 'mother of the bride', 'maid of honour', 'maid of honor', 'bridesmaid'])
+const GROOM_SIDE = new Set(['groom', 'mother of the groom', 'best man', 'groomsman'])
+export function sideForRelation(relation) {
+  const r = String(relation || '').trim().toLowerCase()
+  if (BRIDE_SIDE.has(r) || r.endsWith('of the bride')) return 'bride'
+  if (GROOM_SIDE.has(r) || r.endsWith('of the groom')) return 'groom'
+  return null
+}
+
+// "Bride’s side" / "Groom’s side" for a person's details line — left off for
+// the bride and groom themselves, where it would only repeat
+export function sideLabel(person) {
+  const r = String(person?.relation || '').trim().toLowerCase()
+  if (person?.bride || r === 'bride' || r === 'groom') return null
+  return person?.side === 'groom' ? 'Groom’s side' : 'Bride’s side'
+}
 
 // Which profile answers belong to which service. Anything not listed here
 // (name, relation, likes, dislikes, allergies, selfie, additional photos) is
@@ -97,15 +123,15 @@ export function stripIrrelevant(profile = {}) {
 
 // The studio's default price list (prices blank until Arsh fills them in).
 export const DEFAULT_PRICE_LIST = [
-  { code: 'bridal_hm', label: 'Bridal Hair & Makeup', kind: 'service', service: 'both', for_bride: true, minutes: 150, price: null },
-  { code: 'bridal_makeup', label: 'Bridal Makeup', kind: 'service', service: 'makeup', for_bride: true, minutes: 90, price: null },
+  { code: 'bridal_hm', label: 'Bridal Hair & Makeup', kind: 'service', service: 'both', for_bride: true, minutes: 60, price: null },
+  { code: 'bridal_makeup', label: 'Bridal Makeup', kind: 'service', service: 'makeup', for_bride: true, minutes: 60, price: null },
   { code: 'bridal_hair', label: 'Bridal Hair', kind: 'service', service: 'hair', for_bride: true, minutes: 60, price: null },
-  { code: 'party_hm', label: 'Party Hair & Makeup', kind: 'service', service: 'both', for_bride: false, minutes: 90, price: null },
-  { code: 'party_makeup', label: 'Party Makeup', kind: 'service', service: 'makeup', for_bride: false, minutes: 45, price: null },
-  { code: 'party_hair', label: 'Party Hair', kind: 'service', service: 'hair', for_bride: false, minutes: 45, price: null },
-  { code: 'fg_makeup', label: 'Flower Girl Makeup', kind: 'service', service: 'makeup', for_bride: false, minutes: 20, price: null },
-  { code: 'fg_hair', label: 'Flower Girl Hair', kind: 'service', service: 'hair', for_bride: false, minutes: 20, price: null },
-  { code: 'draping', label: 'Dupatta / Saree Draping', kind: 'service', service: null, for_bride: false, minutes: 15, price: null },
+  { code: 'party_hm', label: 'Party Hair & Makeup', kind: 'service', service: 'both', for_bride: false, minutes: 60, price: null },
+  { code: 'party_makeup', label: 'Party Makeup', kind: 'service', service: 'makeup', for_bride: false, minutes: 60, price: null },
+  { code: 'party_hair', label: 'Party Hair', kind: 'service', service: 'hair', for_bride: false, minutes: 60, price: null },
+  { code: 'fg_makeup', label: 'Flower Girl Makeup', kind: 'service', service: 'makeup', for_bride: false, minutes: 60, price: null },
+  { code: 'fg_hair', label: 'Flower Girl Hair', kind: 'service', service: 'hair', for_bride: false, minutes: 60, price: null },
+  { code: 'draping', label: 'Dupatta / Saree Draping', kind: 'service', service: null, for_bride: false, minutes: 60, price: null },
   { code: 'early_start', label: 'Early-start fee', kind: 'fee', service: null, for_bride: false, minutes: null, price: null },
   { code: 'travel', label: 'Travel', kind: 'fee', service: null, for_bride: false, minutes: null, price: null },
   { code: 'parking', label: 'Parking', kind: 'fee', service: null, for_bride: false, minutes: null, price: null },

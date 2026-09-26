@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { supabase, authedDownload } from '../../lib/supabaseClient'
 import { useAuth } from '../AuthProvider'
 import PortalShell from '../../shared/PortalShell'
-import { Btn, Spinner, ErrorNote } from '../../shared/ui'
+import { Btn, Spinner, ErrorNote, emptyNote } from '../../shared/ui'
 import InvoiceView from '../../shared/booking/InvoiceView'
 
 const NAV = [
@@ -30,20 +30,20 @@ export default function Invoice() {
   return (
     <PortalShell title={invoice?.number ? `Invoice ${invoice.number}` : 'Invoice'} nav={NAV} onSignOut={signOut}>
       <div className="mb-6 print:hidden">
-        <Link to="/portal/retainer" className="text-xs tracking-[0.2em] uppercase text-[#8A7A70] hover:text-gold">
+        <Link to="/portal/retainer" className="inline-block py-3 -my-3 text-[11px] tracking-[0.2em] uppercase text-faint hover:text-gold transition-colors">
           ← Payments
         </Link>
       </div>
       {invoice === undefined ? (
         <Spinner />
       ) : !invoice ? (
-        <p className="text-sm text-[#A89080] border border-dashed border-[#C8B8AC] p-8 text-center">This invoice isn’t available.</p>
+        <p className={emptyNote}>This invoice isn’t available — please ask Arsh if you need a copy.</p>
       ) : (
         <>
           <InvoiceView invoice={invoice} />
-          <div className="flex flex-wrap gap-3 justify-center mt-8 print:hidden">
+          <div className="flex flex-col sm:flex-row sm:justify-center gap-3 mt-8 print:hidden">
             <Btn
-              variant="gold"
+              className="w-full sm:w-auto"
               onClick={async () => {
                 setErr('')
                 try {
@@ -55,9 +55,11 @@ export default function Invoice() {
             >
               Download PDF
             </Btn>
-            <Btn variant="outline" onClick={() => window.print()}>Print</Btn>
+            <Btn variant="outline" onClick={() => window.print()} className="w-full sm:w-auto">Print</Btn>
           </div>
-          <ErrorNote>{err}</ErrorNote>
+          <div role="status" aria-live="polite" className="text-center print:hidden">
+            <ErrorNote>{err}</ErrorNote>
+          </div>
         </>
       )}
     </PortalShell>

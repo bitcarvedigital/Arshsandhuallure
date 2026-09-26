@@ -2,12 +2,19 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { AdminShell } from '../AdminShell'
-import { Btn, Spinner, StatusChip, DiamondRule, SectionHeading } from '../../shared/ui'
+import { PageHeader } from '../adminUi'
+import { Spinner, StatusChip, Pill, Chevron, btnClass, emptyNote, rowLine, rowLink } from '../../shared/ui'
 
 const DIFF_DOT = { easy: 'bg-[#7a9070]', medium: 'bg-[#c9a25e]', hard: 'bg-[#a45a48]' }
+const DIFF_LABEL = { easy: 'Easy client', medium: 'Medium client', hard: 'Hard client' }
 
 const today = () => new Date().toLocaleDateString('en-CA')
-const short = (d) => new Date(`${d}T00:00:00`).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })
+// "Sep 25" this year, "Sep 25, 2027" otherwise — short enough for a pill, never ambiguous
+const short = (d) => {
+  const dt = new Date(`${d}T00:00:00`)
+  const sameYear = dt.getFullYear() === new Date().getFullYear()
+  return dt.toLocaleDateString('en-CA', { month: 'short', day: 'numeric', ...(sameYear ? {} : { year: 'numeric' }) })
+}
 
 // next upcoming event date, else the last one; and the last date overall
 function eventDates(client) {
@@ -22,39 +29,45 @@ function ClientCard({ client }) {
   const { next } = eventDates(client)
   const days = next != null ? Math.round((new Date(`${next}T00:00:00`) - new Date(`${today()}T00:00:00`)) / 86400000) : null
   const events = [...(client.events || [])].sort((a, b) => String(a.event_date || '9999').localeCompare(String(b.event_date || '9999')))
+  const archived = client.status === 'archived'
   return (
-    <Link
-      to={`/admin/clients/${client.id}`}
-      className="flex items-center gap-4 border border-[#C8B8AC] bg-[#FBF8F4] hover:border-gold transition-colors p-5"
-    >
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          {notes?.difficulty && (
-            <span className={`w-2 h-2 rounded-full shrink-0 ${DIFF_DOT[notes.difficulty]}`} />
-          )}
-          <h3 className="font-heading text-lg text-dark truncate">{client.full_name}</h3>
-        </div>
-        {events.length ? (
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {events.map((e, i) => (
-              <span key={i} className="text-[10px] tracking-[0.12em] uppercase border border-[#D8C8BA] px-2 py-0.5 text-[#5A4A40]">
-                {e.name || e.event_type}{e.event_date ? ` · ${short(e.event_date)}` : ''}
-              </span>
-            ))}
+    <div className={rowLine}>
+      <Link to={`/admin/clients/${client.id}`} className={rowLink}>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2.5">
+            {notes?.difficulty && (
+              <span
+                role="img"
+                aria-label={DIFF_LABEL[notes.difficulty]}
+                title={DIFF_LABEL[notes.difficulty]}
+                className={`w-2 h-2 rounded-full shrink-0 ${DIFF_DOT[notes.difficulty]}`}
+              />
+            )}
+            <h3 className="font-heading text-xl text-dark truncate">{client.full_name}</h3>
           </div>
-        ) : (
-          <p className="text-xs text-[#8A7A70] mt-1">No event details yet</p>
-        )}
-      </div>
-      <div className="flex flex-col items-end gap-1.5 shrink-0">
-        {client.status === 'invited' && <StatusChip status="draft" label="Invite pending" />}
-        {days != null && days >= 0 && client.status !== 'archived' && (
-          <span className="text-[10px] tracking-[0.2em] uppercase text-gold">
-            {days === 0 ? 'Today' : `In ${days} day${days === 1 ? '' : 's'}`}
-          </span>
-        )}
-      </div>
-    </Link>
+          {events.length ? (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {events.map((e, i) => (
+                <Pill key={i} className="!px-2.5 !py-0.5">
+                  {e.name || e.event_type}{e.event_date ? ` · ${short(e.event_date)}` : ''}
+                </Pill>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-faint mt-1.5">No event details yet</p>
+          )}
+        </div>
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
+          {archived && <StatusChip status="locked" label="Archived" />}
+          {client.status === 'invited' && <StatusChip status="draft" label="Invite pending" />}
+          {days != null && days >= 0 && !archived && (
+            <span className="text-sm text-dark whitespace-nowrap">
+              {days === 0 ? 'Today' : `in ${days} day${days === 1 ? '' : 's'}`}
+            </span>
+          )}
+        </div>
+      </Link>
+    </div>
   )
 }
 
@@ -77,43 +90,55 @@ export default function ClientList() {
   const upcoming = active.filter((c) => !eventDates(c).last || eventDates(c).last >= t).sort((a, b) => nextKey(a).localeCompare(nextKey(b)))
   const past = active.filter((c) => eventDates(c).last && eventDates(c).last < t)
   const archived = (clients || []).filter((c) => c.status === 'archived')
+  const olderCount = past.length + archived.length
 
   return (
     <AdminShell title="Clients">
-      <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
-        <SectionHeading eyebrow="Studio" title="Your clients" />
-        <Link to="/admin/clients/new">
-          <Btn>+ New client</Btn>
-        </Link>
-      </div>
-      <DiamondRule className="my-8" />
+      <PageHeader
+        eyebrow="Studio"
+        title="Your clients"
+        intro={clients && upcoming.length > 0 ? `${upcoming.length} upcoming, soonest first.` : null}
+        action={
+          <Link to="/admin/clients/new" className={btnClass('solid', 'sm')}>
+            + New client
+          </Link>
+        }
+      />
       {!clients ? (
         <Spinner />
       ) : (
         <>
-          <div className="flex flex-col gap-3">
-            {upcoming.length === 0 && (
-              <p className="text-sm text-[#A89080] border border-dashed border-[#C8B8AC] p-8 text-center">
-                No upcoming clients — add your first one.
-              </p>
-            )}
-            {upcoming.map((c) => (
-              <ClientCard key={c.id} client={c} />
-            ))}
-          </div>
-          {(past.length > 0 || archived.length > 0) && (
-            <button
-              onClick={() => setShowPast((s) => !s)}
-              className="mt-8 text-xs tracking-[0.2em] uppercase text-[#8A7A70] hover:text-gold cursor-pointer"
-            >
-              {showPast ? '− Hide' : '+ Show'} past & archived ({past.length + archived.length})
-            </button>
-          )}
-          {showPast && (
-            <div className="flex flex-col gap-3 mt-4 opacity-75">
-              {[...past, ...archived].map((c) => (
+          {upcoming.length === 0 ? (
+            <p className={emptyNote}>
+              {clients.length === 0
+                ? 'No clients yet — add your first booking to get started.'
+                : 'No upcoming bookings right now.'}
+            </p>
+          ) : (
+            <div className="border-t border-line">
+              {upcoming.map((c) => (
                 <ClientCard key={c.id} client={c} />
               ))}
+            </div>
+          )}
+          {olderCount > 0 && (
+            <div className="mt-10">
+              <button
+                type="button"
+                onClick={() => setShowPast((s) => !s)}
+                aria-expanded={showPast}
+                className="inline-flex items-center gap-2.5 min-h-8 text-[11px] tracking-[0.2em] uppercase text-faint hover:text-gold transition-colors cursor-pointer"
+              >
+                <Chevron open={showPast} />
+                Past & archived <span className="tracking-normal">({olderCount})</span>
+              </button>
+              {showPast && (
+                <div className="border-t border-line mt-3 opacity-80">
+                  {[...past, ...archived].map((c) => (
+                    <ClientCard key={c.id} client={c} />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </>

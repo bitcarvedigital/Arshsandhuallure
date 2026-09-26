@@ -51,6 +51,16 @@ PLUS the client/admin portal. Built and maintained by BitCarve Digital.
 - Keep-alive: Vercel cron hits `/api/cron/keepalive` daily (needs `CRON_SECRET`) so the free Supabase project never pauses.
 - Submission emails: pg_net trigger → `/api/hooks/submission-created`; URL + secret in `private_config` (RLS, no policies). If emails stop, check that table and the Vercel function logs first.
 
+## Portal look (Bhagesh, 2026-09-26 — "D with C's soft corners")
+- **No outlined boxes.** Lists are rows split by thin lines (`rowLine` + `rowLink`); the few things that need a surface get a soft cream panel (`softPanel` = `rounded-2xl bg-surface`); notes `softNote`; empty states `emptyNote`; labels are soft rounded `Pill` / `StatusChip`; buttons are rounded pills (`Btn`, `size="sm"` for small; a Link styled as a button uses `btnClass()` — never wrap a `<button>` in a `<Link>`).
+- **Colour tokens only** (tailwind.config.js): `text-dark` · `text-body` · `text-muted` · `text-faint` · `text-ghost` (locked only) · `border-line` · `bg-surface` · `bg-soft` · `text-danger` · `text-success`. Don't add new hex greys. Gold stays an accent (never a large fill; selected states are `bg-dark`).
+- Page header: MicroLabel eyebrow → `h1 font-heading text-3xl` → one-line `text-sm text-muted` intro. Timestamps use `fmtDateTime`.
+- The bride's home page = one "next step" panel with a single button + a quiet progress list.
+- Only big things fold: each event on the studio Overview (`useSectionOpen`, remembered per browser tab; "Open/Close events"). Small sections never collapse.
+- **Strictly minimal: no diamond motifs, ornaments or decorative dividers anywhere in the portal** (Bhagesh, 2026-09-26) — numbers are plain numbers, bullets are tiny round dots at most, dividers are plain `bg-line` hairlines only when needed. (The marketing site keeps its own motifs.)
+- Keyboard focus ring: `.portal-ui` class on every portal page root (src/index.css).
+- Design changes are shown to Bhagesh as screenshot options first and applied after he approves.
+
 ## Payments
 E-transfer only for now (address in `app_settings.etransfer_email`; Arsh marks received in admin). `payments.stripe_payment_link` is the reserved slot for a future Stripe link — don't build payment processing without Bhagesh.
 

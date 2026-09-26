@@ -82,7 +82,7 @@ export default function Login({ admin }) {
   const wrongSession = !loading && !busy && session && !rightRole
 
   return (
-    <div className="min-h-screen bg-beige font-body flex flex-col items-center justify-center px-6 py-14">
+    <div className="portal-ui min-h-screen bg-beige font-body flex flex-col items-center justify-center px-6 py-14">
       <Helmet>
         <title>{admin ? 'Studio Login' : 'Client Login'} | Arsh Sandhu Allure</title>
         <meta name="robots" content="noindex" />
@@ -92,20 +92,20 @@ export default function Login({ admin }) {
           {/* pl matches the tracking so the name sits optically centred */}
           <Link
             to="/"
-            className="inline-block font-heading text-[1.2rem] tracking-[0.08em] pl-[0.08em] text-dark hover:text-gold transition-colors duration-300"
+            className="inline-block font-heading text-[20px] leading-tight tracking-[0.08em] pl-[0.08em] text-dark hover:text-gold transition-colors duration-300"
           >
             Arsh Sandhu Allure
           </Link>
-          <h1 className="font-heading text-[2.6rem] leading-tight text-dark mt-1">
+          <h1 className="font-heading text-[2.6rem] leading-none text-dark mt-0">
             <em className="text-gold">{admin ? 'Studio' : 'Client'}</em> Login
           </h1>
-          <p className="text-sm text-[#6B5D53] mt-2">
+          <p className="text-sm text-muted mt-8">
             {admin ? 'For Arsh and the studio team.' : 'For brides and their bridal party.'}
           </p>
         </header>
 
         {wrongSession && (
-          <div className="border-l-2 border-gold bg-beige-card px-4 py-3 mt-10 text-sm text-[#5A4030]">
+          <div className="rounded-xl bg-soft/70 px-4 py-3 mt-10 text-sm text-body">
             {admin
               ? 'You’re signed in with a client account, which can’t open the studio.'
               : 'You’re signed in with a studio account, which can’t open a client portal.'}{' '}
@@ -137,12 +137,12 @@ export default function Login({ admin }) {
           <Btn type="submit" disabled={busy} className="w-full mt-1">
             {busy ? 'Signing in…' : 'Sign in'}
           </Btn>
-          <button type="button" onClick={forgot} className="-mt-2 self-center text-[11px] tracking-[0.15em] uppercase text-[#8A7A70] hover:text-gold transition-colors cursor-pointer">
+          <button type="button" onClick={forgot} className="-mt-2 self-center text-[11px] tracking-[0.15em] uppercase text-faint hover:text-gold transition-colors cursor-pointer">
             Forgot password?
           </button>
         </form>
 
-        <p className="mt-14 text-center text-[11px] tracking-[0.15em] uppercase text-[#8A7A70]">
+        <p className="mt-14 text-center text-[11px] tracking-[0.15em] uppercase text-faint">
           {admin ? 'Not the studio?' : 'Part of the studio?'}
           <Link to={otherLogin} className="ml-2 text-gold border-b border-gold/40 hover:border-gold pb-0.5 transition-colors">
             {admin ? 'Client Login' : 'Studio Login'}

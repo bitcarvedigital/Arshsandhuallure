@@ -205,6 +205,12 @@ if (victimInvoice) {
 }
 const pdfAnon = await post('/api/invoice', { action: 'download', invoiceId: victimInvoice?.id || '00000000-0000-0000-0000-000000000000' })
 check('anon cannot download invoice PDFs', pdfAnon.status === 401, `status ${pdfAnon.status}`)
+// the timeline PDF is studio-only (it also emails Arsh) — a client or anon must be refused before anything renders or sends
+const { data: victimEvent } = await svc.from('events').select('id').eq('client_id', victim.id).limit(1).maybeSingle()
+const tlAsEve = await post('/api/invoice', { action: 'timeline', clientId: victim.id, eventId: victimEvent?.id || '00000000-0000-0000-0000-000000000000' }, { Authorization: `Bearer ${eveSession.session.access_token}` })
+check('client cannot make or email a timeline PDF', tlAsEve.status === 401, `status ${tlAsEve.status}`)
+const tlAnon = await post('/api/invoice', { action: 'timeline', clientId: victim.id, eventId: victimEvent?.id || '00000000-0000-0000-0000-000000000000' })
+check('anon cannot make or email a timeline PDF', tlAnon.status === 401, `status ${tlAnon.status}`)
 
 const hookNoSecret = await post('/api/hooks/submission-created', { type: 'INSERT', table: 'submissions', record: { id: 'x' } })
 check('webhook without secret rejected', hookNoSecret.status === 401, `status ${hookNoSecret.status}`)

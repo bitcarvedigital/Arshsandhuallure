@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../AuthProvider'
 import PortalShell from '../../shared/PortalShell'
-import { Field, Btn, ErrorNote, DiamondRule, SectionHeading, MicroLabel, PasswordField } from '../../shared/ui'
+import { Field, Btn, ErrorNote, MicroLabel, FormSection, InfoRow, PasswordField } from '../../shared/ui'
 
 const NAV = [
   { to: '/portal', label: 'Journey' },
@@ -58,33 +58,42 @@ export default function Settings() {
 
   return (
     <PortalShell title="Settings" nav={NAV} onSignOut={signOut}>
-      <SectionHeading eyebrow="Settings" title="Your details" className="mb-8" />
+      <MicroLabel className="mb-2">Settings</MicroLabel>
+      <h1 className="font-heading text-3xl text-dark">Your details</h1>
 
-      <form onSubmit={saveContact} className="max-w-md flex flex-col gap-6">
-        <MicroLabel>Contact</MicroLabel>
-        <Field label="Name" value={client?.full_name || ''} disabled />
-        <Field label="Email" value={client?.email || ''} disabled />
-        <p className="text-xs text-[#8A7A70] -mt-4">
-          Need a different name or email? Just message Arsh — she’ll update it for you.
-        </p>
-        <Field label="Phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (000) 000-0000" />
-        {contactMsg && <p className="text-gold text-sm">{contactMsg}</p>}
-        <Btn type="submit" className="self-start">Save contact</Btn>
-      </form>
+      <div className="mt-10 max-w-md">
+        <form onSubmit={saveContact}>
+          <FormSection title="Contact">
+            <div>
+              <InfoRow label="Name" value={client?.full_name || '—'} />
+              <InfoRow label="Email" value={client?.email || '—'} />
+              <p className="text-xs text-faint mt-3">
+                Need a different name or email? Just message Arsh — she’ll update it for you.
+              </p>
+            </div>
+            <Field label="Phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (000) 000-0000" autoComplete="tel" />
+            <div role="status" aria-live="polite" className="empty:hidden -my-2">
+              {contactMsg && <p className="text-gold text-sm">{contactMsg}</p>}
+            </div>
+            <Btn type="submit" variant="outline" className="w-full sm:w-auto sm:self-start">Save phone</Btn>
+          </FormSection>
+        </form>
 
-      <DiamondRule className="my-10 max-w-md" />
-
-      <form onSubmit={changePassword} className="max-w-md flex flex-col gap-6">
-        <MicroLabel>Change password</MicroLabel>
-        <PasswordField label="Current password" required value={current} onChange={(e) => setCurrent(e.target.value)} autoComplete="current-password" />
-        <PasswordField label="New password" required value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" />
-        <PasswordField label="Confirm new password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
-        <ErrorNote>{pwErr}</ErrorNote>
-        {pwMsg && <p className="text-gold text-sm">{pwMsg}</p>}
-        <Btn type="submit" disabled={busy} className="self-start">
-          {busy ? 'Updating…' : 'Update password'}
-        </Btn>
-      </form>
+        <form onSubmit={changePassword}>
+          <FormSection title="Change password" hint="At least 8 characters.">
+            <PasswordField label="Current password" required value={current} onChange={(e) => setCurrent(e.target.value)} autoComplete="current-password" />
+            <PasswordField label="New password" required value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" />
+            <PasswordField label="Confirm new password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
+            <div role="status" aria-live="polite" className="empty:hidden -my-2">
+              <ErrorNote>{pwErr}</ErrorNote>
+              {pwMsg && <p className="text-gold text-sm py-2">{pwMsg}</p>}
+            </div>
+            <Btn type="submit" variant="outline" disabled={busy} className="w-full sm:w-auto sm:self-start">
+              {busy ? 'Updating…' : 'Update password'}
+            </Btn>
+          </FormSection>
+        </form>
+      </div>
     </PortalShell>
   )
 }
