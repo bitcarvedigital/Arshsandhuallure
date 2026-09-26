@@ -35,7 +35,7 @@ export default function InvoicePanel({ client, events, lines, payments, invoices
     if (!window.confirm(`Email this invoice to ${client.email}? A copy comes to you too.`)) return
     setBusy(true)
     try {
-      const res = await authedFetch('/api/admin/send-invoice', { clientId: client.id, dueOn, amountDue, note })
+      const res = await authedFetch('/api/invoice', { action: 'send', clientId: client.id, dueOn, amountDue, note })
       setMsg(res.emailed ? `Invoice ${res.invoice.number} sent to ${client.email} ✓` : `Invoice ${res.invoice.number} saved — the email could not be sent (${res.reason || 'email not configured'}).`)
       setPreview(false)
       setNote('')
@@ -52,7 +52,7 @@ export default function InvoicePanel({ client, events, lines, payments, invoices
     setBusy(true)
     setErr('')
     try {
-      const res = await authedFetch('/api/admin/send-invoice', { resendId: inv.id })
+      const res = await authedFetch('/api/invoice', { action: 'resend', invoiceId: inv.id })
       setMsg(res.emailed ? `${inv.number} re-sent ✓` : `Could not email ${inv.number} (${res.reason || 'email not configured'}).`)
       reload()
     } catch (e) {
@@ -71,7 +71,7 @@ export default function InvoicePanel({ client, events, lines, payments, invoices
   async function download(body, filename) {
     setErr('')
     try {
-      await authedDownload('/api/invoice-pdf', body, filename)
+      await authedDownload('/api/invoice', body, filename)
     } catch (e) {
       setErr(e.message)
     }
@@ -114,7 +114,7 @@ export default function InvoicePanel({ client, events, lines, payments, invoices
               <Btn variant="outline" className="!px-4 !py-2.5" onClick={() => setPreview((p) => !p)}>
                 {preview ? 'Hide preview' : 'Preview'}
               </Btn>
-              <Btn variant="outline" className="!px-4 !py-2.5" onClick={() => download({ clientId: client.id, preview: true, dueOn, amountDue, note }, `Invoice-preview-${client.full_name}.pdf`)}>
+              <Btn variant="outline" className="!px-4 !py-2.5" onClick={() => download({ action: 'preview', clientId: client.id, dueOn, amountDue, note }, `Invoice-preview-${client.full_name}.pdf`)}>
                 Preview PDF
               </Btn>
               <Btn variant="gold" className="!px-4 !py-2.5" onClick={send} disabled={busy}>
@@ -144,7 +144,7 @@ export default function InvoicePanel({ client, events, lines, payments, invoices
             {inv.status === 'void' ? <StatusChip status="changes_requested" label="Void" /> : null}
             <div className="flex gap-3 text-[10px] tracking-[0.2em] uppercase">
               <button className="text-gold hover:underline cursor-pointer" onClick={() => setViewing(inv)}>View</button>
-              <button className="text-gold hover:underline cursor-pointer" onClick={() => download({ invoiceId: inv.id }, `${inv.number}.pdf`)}>PDF</button>
+              <button className="text-gold hover:underline cursor-pointer" onClick={() => download({ action: 'download', invoiceId: inv.id }, `${inv.number}.pdf`)}>PDF</button>
               {inv.status !== 'void' && (
                 <>
                   <button className="text-gold hover:underline cursor-pointer disabled:opacity-40" disabled={busy} onClick={() => resend(inv)}>Re-send</button>

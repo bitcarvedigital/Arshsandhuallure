@@ -87,10 +87,7 @@
     }
   ],
   "functions": {
-    "api/admin/send-invoice.js": {
-      "includeFiles": "api/_assets/fonts/**"
-    },
-    "api/invoice-pdf.js": {
+    "api/invoice.js": {
       "includeFiles": "api/_assets/fonts/**"
     }
   }

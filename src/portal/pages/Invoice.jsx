@@ -47,7 +47,7 @@ export default function Invoice() {
               onClick={async () => {
                 setErr('')
                 try {
-                  await authedDownload('/api/invoice-pdf', { invoiceId: invoice.id }, `${invoice.number}.pdf`)
+                  await authedDownload('/api/invoice', { action: 'download', invoiceId: invoice.id }, `${invoice.number}.pdf`)
                 } catch (e) {
                   setErr(e.message)
                 }

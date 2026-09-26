@@ -183,15 +183,15 @@ const { data: eveSession } = await eve.auth.getSession()
 const adminAsEve = await post('/api/admin/create-client', { fullName: 'X', email: 'x@x.com' }, { Authorization: `Bearer ${eveSession.session.access_token}` })
 check('client JWT rejected on admin endpoint', adminAsEve.status === 401, `status ${adminAsEve.status}`)
 
-const sendAsEve = await post('/api/admin/send-invoice', { clientId: eveClientRow.id }, { Authorization: `Bearer ${eveSession.session.access_token}` })
+const sendAsEve = await post('/api/invoice', { action: 'send', clientId: eveClientRow.id }, { Authorization: `Bearer ${eveSession.session.access_token}` })
 check('client JWT rejected on send-invoice', sendAsEve.status === 401, `status ${sendAsEve.status}`)
-const previewAsEve = await post('/api/invoice-pdf', { preview: true, clientId: victim.id }, { Authorization: `Bearer ${eveSession.session.access_token}` })
+const previewAsEve = await post('/api/invoice', { action: 'preview', clientId: victim.id }, { Authorization: `Bearer ${eveSession.session.access_token}` })
 check('client cannot preview invoices', previewAsEve.status === 401, `status ${previewAsEve.status}`)
 if (victimInvoice) {
-  const stealPdf = await post('/api/invoice-pdf', { invoiceId: victimInvoice.id }, { Authorization: `Bearer ${eveSession.session.access_token}` })
+  const stealPdf = await post('/api/invoice', { action: 'download', invoiceId: victimInvoice.id }, { Authorization: `Bearer ${eveSession.session.access_token}` })
   check('client cannot download another client’s invoice PDF', stealPdf.status === 404, `status ${stealPdf.status}`)
 }
-const pdfAnon = await post('/api/invoice-pdf', { invoiceId: victimInvoice?.id || '00000000-0000-0000-0000-000000000000' })
+const pdfAnon = await post('/api/invoice', { action: 'download', invoiceId: victimInvoice?.id || '00000000-0000-0000-0000-000000000000' })
 check('anon cannot download invoice PDFs', pdfAnon.status === 401, `status ${pdfAnon.status}`)
 
 const hookNoSecret = await post('/api/hooks/submission-created', { type: 'INSERT', table: 'submissions', record: { id: 'x' } })
