@@ -78,68 +78,71 @@ export default function Login({ admin }) {
   const wrongSession = !loading && !busy && session && !rightRole
 
   return (
-    <div className="min-h-screen bg-beige flex items-center justify-center px-5 py-16 font-body">
-      {/* colour-coded strip: dark = studio, gold = client */}
-      <div className={`fixed top-0 inset-x-0 h-1.5 ${admin ? 'bg-btn-dark' : 'bg-gold'}`} />
+    <div className="min-h-screen bg-beige flex flex-col font-body">
       <Helmet>
         <title>{admin ? 'Studio Login' : 'Client Login'} | Arsh Sandhu Allure</title>
         <meta name="robots" content="noindex" />
       </Helmet>
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-10">
-          <Link to="/" className="font-heading text-xl text-dark">Arsh Sandhu Allure</Link>
-          <DiamondRule className="mt-5" />
-          <h1 className="font-heading text-4xl text-dark mt-7">
-            <em className="text-gold">{admin ? 'Studio' : 'Client'}</em> Login
-          </h1>
-          <p className="text-sm text-[#6B5D53] mt-2">
-            {admin ? 'For Arsh and the studio team.' : 'For brides and their bridal party.'}
-          </p>
-        </div>
-
-        {wrongSession && (
-          <div className="border-l-2 border-gold bg-beige-card px-4 py-3 mb-8 text-sm text-[#5A4030]">
-            {admin
-              ? 'You’re signed in with a client account, which can’t open the studio.'
-              : 'You’re signed in with a studio account, which can’t open a client portal.'}{' '}
-            Sign out to use a different account here.
-            <button
-              type="button"
-              onClick={dropSession}
-              className="block mt-2 text-[10px] tracking-[0.2em] uppercase text-gold hover:underline cursor-pointer"
-            >
-              Sign out
-            </button>
+      {/* wordmark sits top-left, like the site's own header */}
+      <header className="max-w-7xl w-full mx-auto px-8 md:px-12 py-5">
+        <Link to="/" className="font-heading text-[1.1rem] tracking-[0.1em] text-dark">Arsh Sandhu Allure</Link>
+      </header>
+      <main className="flex-1 flex items-center justify-center px-5 pt-6 pb-16">
+        <div className="w-full max-w-sm">
+          <div className="text-center mb-10">
+            <h1 className="font-heading text-4xl text-dark">
+              <em className="text-gold">{admin ? 'Studio' : 'Client'}</em> Login
+            </h1>
+            <p className="text-sm text-[#6B5D53] mt-2">
+              {admin ? 'For Arsh and the studio team.' : 'For brides and their bridal party.'}
+            </p>
+            <DiamondRule className="mt-7" />
           </div>
-        )}
 
-        <form onSubmit={submit} className="flex flex-col gap-6">
-          <Field label="Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" autoComplete="email" />
-          <PasswordField label="Password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" />
-          <ErrorNote>{error}</ErrorNote>
-          {error && (
-            <Link to={otherLogin} className="-mt-4 text-[10px] tracking-[0.2em] uppercase text-gold hover:underline">
-              Go to the {admin ? 'Client' : 'Studio'} Login →
-            </Link>
+          {wrongSession && (
+            <div className="border-l-2 border-gold bg-beige-card px-4 py-3 mb-8 text-sm text-[#5A4030]">
+              {admin
+                ? 'You’re signed in with a client account, which can’t open the studio.'
+                : 'You’re signed in with a studio account, which can’t open a client portal.'}{' '}
+              Sign out to use a different account here.
+              <button
+                type="button"
+                onClick={dropSession}
+                className="block mt-2 text-[10px] tracking-[0.2em] uppercase text-gold hover:underline cursor-pointer"
+              >
+                Sign out
+              </button>
+            </div>
           )}
-          {notice && <p className="text-gold text-sm">{notice}</p>}
-          <Btn type="submit" disabled={busy}>{busy ? 'Signing in…' : admin ? 'Sign in to the Studio' : 'Sign in to my portal'}</Btn>
-          <button type="button" onClick={forgot} className="text-xs tracking-[0.15em] uppercase text-[#8A7A70] hover:text-gold transition-colors cursor-pointer">
-            Forgot password?
-          </button>
-        </form>
-        <div className="mt-10 pt-6 border-t border-[#E0D2C2] text-center">
-          <p className="text-[10px] tracking-[0.25em] uppercase text-[#8A7A70] mb-3">
-            {admin ? 'Not the studio?' : 'Part of the studio?'}
-          </p>
-          <Link
-            to={otherLogin}
-            className="inline-block border border-[#A89080] text-dark text-xs tracking-[0.25em] uppercase px-8 py-3 hover:border-gold hover:text-gold transition-colors duration-300"
-          >
-            {admin ? 'Client Login' : 'Studio Login'}
-          </Link>
+
+          <form onSubmit={submit} className="flex flex-col gap-6">
+            <Field label="Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" autoComplete="email" />
+            <PasswordField label="Password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" />
+            <ErrorNote>{error}</ErrorNote>
+            {error && (
+              <Link to={otherLogin} className="-mt-4 text-[10px] tracking-[0.2em] uppercase text-gold hover:underline">
+                Go to the {admin ? 'Client' : 'Studio'} Login →
+              </Link>
+            )}
+            {notice && <p className="text-gold text-sm">{notice}</p>}
+            <Btn type="submit" disabled={busy}>{busy ? 'Signing in…' : admin ? 'Sign in to the Studio' : 'Sign in to my portal'}</Btn>
+            <button type="button" onClick={forgot} className="text-xs tracking-[0.15em] uppercase text-[#8A7A70] hover:text-gold transition-colors cursor-pointer">
+              Forgot password?
+            </button>
+          </form>
+          <div className="mt-10 pt-6 border-t border-[#E0D2C2] text-center">
+            <p className="text-[10px] tracking-[0.25em] uppercase text-[#8A7A70] mb-3">
+              {admin ? 'Not the studio?' : 'Part of the studio?'}
+            </p>
+            <Link
+              to={otherLogin}
+              className="inline-block border border-[#A89080] text-dark text-xs tracking-[0.25em] uppercase px-8 py-3 hover:border-gold hover:text-gold transition-colors duration-300"
+            >
+              {admin ? 'Client Login' : 'Studio Login'}
+            </Link>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   )
 }
