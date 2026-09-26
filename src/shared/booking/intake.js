@@ -61,11 +61,18 @@ export function newPayload(client, bookingEvents) {
 // already saw and saved them).
 export function upgradePayload(payload = {}, bookingEvents = []) {
   if (payload.schema === 2) return payload
-  const first = bookingEvents[0]
   const events = bookingEvents.map(fromBooking)
-  if (first && events[0]) {
-    if (payload.event_date) events[0].event_date = payload.event_date
-    if (payload.getting_ready_address) events[0].address = payload.getting_ready_address
+  // the old answers belong to the event they were about: match on the date she
+  // gave, else the event that existed before multi-event booking (oldest row)
+  const byDate = events.findIndex((e) => payload.event_date && e.event_date === payload.event_date)
+  const oldest = bookingEvents.reduce(
+    (best, e, i) => (best < 0 || String(e.created_at || '') < String(bookingEvents[best].created_at || '') ? i : best),
+    -1,
+  )
+  const target = events[byDate >= 0 ? byDate : oldest]
+  if (target) {
+    if (payload.event_date) target.event_date = payload.event_date
+    if (payload.getting_ready_address) target.address = payload.getting_ready_address
   }
   return {
     schema: 2,
