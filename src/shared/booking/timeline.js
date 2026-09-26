@@ -149,7 +149,13 @@ export function bricksFromBooking(event, lines = [], members = []) {
         })
         continue
       }
-      const match = attending.find((m) => !used.has(m.id) && (!m.services || m.services === l.service))
+      // exact service match first, then someone booked for both (a "both"
+      // guest can fill a makeup-only slot at the Mehndi), then anyone unset
+      const free = attending.filter((m) => !used.has(m.id))
+      const match =
+        free.find((m) => m.services === l.service) ||
+        free.find((m) => m.services === 'both' && l.service !== 'both') ||
+        free.find((m) => !m.services)
       if (match) used.add(match.id)
       out.push({
         id: uid(), column: null, kind: 'person',
