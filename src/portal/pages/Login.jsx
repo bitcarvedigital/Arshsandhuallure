@@ -3,11 +3,19 @@ import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth, resolveRole } from '../AuthProvider'
-import { Field, Btn, ErrorNote, DiamondRule, MicroLabel, PasswordField } from '../../shared/ui'
+import { Field, Btn, ErrorNote, DiamondRule, PasswordField } from '../../shared/ui'
 
 // One page, two doors. The studio login only accepts studio accounts and the
 // client login only accepts client accounts — a wrong-kind account gets an
 // error (and is signed straight back out), never the other portal.
+
+// Clears the session even when the sign-out call can't reach the server, so a
+// wrong-kind login never lingers in the browser.
+async function dropSession() {
+  const { error } = await supabase.auth.signOut()
+  if (error) await supabase.auth.signOut({ scope: 'local' })
+}
+
 export default function Login({ admin }) {
   const { session, client, isAdmin, loading } = useAuth()
   const [email, setEmail] = useState('')
@@ -40,7 +48,7 @@ export default function Login({ admin }) {
     const role = await resolveRole(data.user?.id)
     const allowed = admin ? role.isAdmin : !!role.client
     if (!allowed) {
-      await supabase.auth.signOut()
+      await dropSession()
       setBusy(false)
       setPassword('')
       setError(
@@ -70,16 +78,30 @@ export default function Login({ admin }) {
   const wrongSession = !loading && !busy && session && !rightRole
 
   return (
-    <div className="min-h-screen bg-beige flex items-center justify-center px-5 font-body">
+    <div className="min-h-screen bg-beige flex items-center justify-center px-5 py-16 font-body">
+      {/* colour-coded strip: dark = studio, gold = client */}
+      <div className={`fixed top-0 inset-x-0 h-1.5 ${admin ? 'bg-btn-dark' : 'bg-gold'}`} />
       <Helmet>
         <title>{admin ? 'Studio Login' : 'Client Login'} | Arsh Sandhu Allure</title>
         <meta name="robots" content="noindex" />
       </Helmet>
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
-          <Link to="/" className="font-heading text-2xl text-dark">Arsh Sandhu Allure</Link>
-          <MicroLabel className="mt-3">{admin ? 'Studio' : 'Client Portal'}</MicroLabel>
-          <DiamondRule className="mt-6" />
+          <Link to="/" className="font-heading text-xl text-dark">Arsh Sandhu Allure</Link>
+          <DiamondRule className="mt-5" />
+          <span
+            className={`inline-block mt-7 px-4 py-1.5 text-[10px] tracking-[0.3em] uppercase ${
+              admin ? 'bg-btn-dark text-beige' : 'border border-gold text-gold'
+            }`}
+          >
+            {admin ? 'Studio · team only' : 'Client portal'}
+          </span>
+          <h1 className="font-heading text-4xl text-dark mt-4">
+            <em className="text-gold">{admin ? 'Studio' : 'Client'}</em> Login
+          </h1>
+          <p className="text-sm text-[#6B5D53] mt-2">
+            {admin ? 'For Arsh and the studio team.' : 'For brides and their bridal party.'}
+          </p>
         </div>
 
         {wrongSession && (
@@ -90,7 +112,7 @@ export default function Login({ admin }) {
             Sign out to use a different account here.
             <button
               type="button"
-              onClick={() => supabase.auth.signOut()}
+              onClick={dropSession}
               className="block mt-2 text-[10px] tracking-[0.2em] uppercase text-gold hover:underline cursor-pointer"
             >
               Sign out
@@ -108,7 +130,7 @@ export default function Login({ admin }) {
             </Link>
           )}
           {notice && <p className="text-gold text-sm">{notice}</p>}
-          <Btn type="submit" disabled={busy}>{busy ? 'Signing in…' : 'Sign In'}</Btn>
+          <Btn type="submit" disabled={busy}>{busy ? 'Signing in…' : admin ? 'Sign in to the Studio' : 'Sign in to my portal'}</Btn>
           <button type="button" onClick={forgot} className="text-xs tracking-[0.15em] uppercase text-[#8A7A70] hover:text-gold transition-colors cursor-pointer">
             Forgot password?
           </button>
