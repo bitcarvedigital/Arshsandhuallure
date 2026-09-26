@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth, resolveRole } from '../AuthProvider'
-import { Field, Btn, ErrorNote, DiamondRule, PasswordField } from '../../shared/ui'
+import { Field, Btn, ErrorNote, PasswordField } from '../../shared/ui'
 
 // One page, two doors. The studio login only accepts studio accounts and the
 // client login only accepts client accounts — a wrong-kind account gets an
@@ -22,6 +22,7 @@ export default function Login({ admin }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [wrongDoor, setWrongDoor] = useState(false) // right password, wrong login page
   const [busy, setBusy] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -38,6 +39,7 @@ export default function Login({ admin }) {
     e.preventDefault()
     setError('')
     setNotice('')
+    setWrongDoor(false)
     setBusy(true)
     const { data, error: err } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
     if (err) {
@@ -49,6 +51,7 @@ export default function Login({ admin }) {
     const allowed = admin ? role.isAdmin : !!role.client
     if (!allowed) {
       await dropSession()
+      setWrongDoor(true)
       setBusy(false)
       setPassword('')
       setError(
@@ -64,6 +67,7 @@ export default function Login({ admin }) {
 
   async function forgot() {
     setError('')
+    setWrongDoor(false)
     if (!email.trim()) {
       setError('Enter your email above first, then tap “Forgot password”.')
       return
@@ -78,71 +82,70 @@ export default function Login({ admin }) {
   const wrongSession = !loading && !busy && session && !rightRole
 
   return (
-    <div className="min-h-screen bg-beige flex flex-col font-body">
+    <div className="min-h-screen bg-beige font-body flex flex-col items-center justify-center px-6 py-14">
       <Helmet>
         <title>{admin ? 'Studio Login' : 'Client Login'} | Arsh Sandhu Allure</title>
         <meta name="robots" content="noindex" />
       </Helmet>
-      {/* wordmark sits top-left, like the site's own header */}
-      <header className="max-w-7xl w-full mx-auto px-8 md:px-12 py-5">
-        <Link to="/" className="font-heading text-[1.1rem] tracking-[0.1em] text-dark">Arsh Sandhu Allure</Link>
-      </header>
-      <main className="flex-1 flex items-center justify-center px-5 pt-6 pb-16">
-        <div className="w-full max-w-sm">
-          <div className="text-center mb-10">
-            <h1 className="font-heading text-4xl text-dark">
-              <em className="text-gold">{admin ? 'Studio' : 'Client'}</em> Login
-            </h1>
-            <p className="text-sm text-[#6B5D53] mt-2">
-              {admin ? 'For Arsh and the studio team.' : 'For brides and their bridal party.'}
-            </p>
-            <DiamondRule className="mt-7" />
-          </div>
+      <div className="w-full max-w-[360px]">
+        <header className="text-center">
+          <Link to="/" className="font-heading text-[1.35rem] tracking-[0.06em] text-dark hover:text-gold transition-colors duration-300">
+            Arsh Sandhu Allure
+          </Link>
+          <span aria-hidden="true" className="block w-1.5 h-1.5 border border-gold rotate-45 mx-auto mt-6" />
+          <h1 className="font-heading text-[2.6rem] leading-tight text-dark mt-6">
+            <em className="text-gold">{admin ? 'Studio' : 'Client'}</em> Login
+          </h1>
+          <p className="text-sm text-[#6B5D53] mt-2">
+            {admin ? 'For Arsh and the studio team.' : 'For brides and their bridal party.'}
+          </p>
+        </header>
 
-          {wrongSession && (
-            <div className="border-l-2 border-gold bg-beige-card px-4 py-3 mb-8 text-sm text-[#5A4030]">
-              {admin
-                ? 'You’re signed in with a client account, which can’t open the studio.'
-                : 'You’re signed in with a studio account, which can’t open a client portal.'}{' '}
-              Sign out to use a different account here.
-              <button
-                type="button"
-                onClick={dropSession}
-                className="block mt-2 text-[10px] tracking-[0.2em] uppercase text-gold hover:underline cursor-pointer"
-              >
-                Sign out
-              </button>
+        {wrongSession && (
+          <div className="border-l-2 border-gold bg-beige-card px-4 py-3 mt-10 text-sm text-[#5A4030]">
+            {admin
+              ? 'You’re signed in with a client account, which can’t open the studio.'
+              : 'You’re signed in with a studio account, which can’t open a client portal.'}{' '}
+            Sign out to use a different account here.
+            <button
+              type="button"
+              onClick={dropSession}
+              className="block mt-2 text-[10px] tracking-[0.2em] uppercase text-gold hover:underline cursor-pointer"
+            >
+              Sign out
+            </button>
+          </div>
+        )}
+
+        <form onSubmit={submit} className="mt-12 flex flex-col gap-7">
+          <Field label="Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" autoComplete="username" />
+          <PasswordField label="Password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" />
+          {(error || notice) && (
+            <div className="-my-2" role="status" aria-live="polite">
+              <ErrorNote>{error}</ErrorNote>
+              {error && wrongDoor && (
+                <Link to={otherLogin} className="text-[10px] tracking-[0.2em] uppercase text-gold hover:underline">
+                  Go to the {admin ? 'Client' : 'Studio'} Login →
+                </Link>
+              )}
+              {notice && <p className="text-gold text-sm py-2">{notice}</p>}
             </div>
           )}
+          <Btn type="submit" disabled={busy} className="w-full mt-1">
+            {busy ? 'Signing in…' : 'Sign in'}
+          </Btn>
+          <button type="button" onClick={forgot} className="-mt-2 self-center text-[11px] tracking-[0.15em] uppercase text-[#8A7A70] hover:text-gold transition-colors cursor-pointer">
+            Forgot password?
+          </button>
+        </form>
 
-          <form onSubmit={submit} className="flex flex-col gap-6">
-            <Field label="Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" autoComplete="email" />
-            <PasswordField label="Password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" />
-            <ErrorNote>{error}</ErrorNote>
-            {error && (
-              <Link to={otherLogin} className="-mt-4 text-[10px] tracking-[0.2em] uppercase text-gold hover:underline">
-                Go to the {admin ? 'Client' : 'Studio'} Login →
-              </Link>
-            )}
-            {notice && <p className="text-gold text-sm">{notice}</p>}
-            <Btn type="submit" disabled={busy}>{busy ? 'Signing in…' : admin ? 'Sign in to the Studio' : 'Sign in to my portal'}</Btn>
-            <button type="button" onClick={forgot} className="text-xs tracking-[0.15em] uppercase text-[#8A7A70] hover:text-gold transition-colors cursor-pointer">
-              Forgot password?
-            </button>
-          </form>
-          <div className="mt-10 pt-6 border-t border-[#E0D2C2] text-center">
-            <p className="text-[10px] tracking-[0.25em] uppercase text-[#8A7A70] mb-3">
-              {admin ? 'Not the studio?' : 'Part of the studio?'}
-            </p>
-            <Link
-              to={otherLogin}
-              className="inline-block border border-[#A89080] text-dark text-xs tracking-[0.25em] uppercase px-8 py-3 hover:border-gold hover:text-gold transition-colors duration-300"
-            >
-              {admin ? 'Client Login' : 'Studio Login'}
-            </Link>
-          </div>
-        </div>
-      </main>
+        <p className="mt-14 text-center text-[11px] tracking-[0.15em] uppercase text-[#8A7A70]">
+          {admin ? 'Not the studio?' : 'Part of the studio?'}
+          <Link to={otherLogin} className="ml-2 text-gold border-b border-gold/40 hover:border-gold pb-0.5 transition-colors">
+            {admin ? 'Client Login' : 'Studio Login'}
+          </Link>
+        </p>
+      </div>
     </div>
   )
 }
