@@ -29,9 +29,17 @@ const check = (name, ok, detail = '') => {
   ok ? pass++ : fail++
 }
 
-// --- target: a registered client — preferably one with an issued invoice -----
-const { data: invoiced } = await svc.from('invoices').select('id, client_id').eq('status', 'issued').limit(1)
-const { data: victims } = invoiced?.length
+// --- target: VICTIM_EMAIL if given (use the demo bride in production — never a
+// real client), else a registered client, preferably one with an issued invoice.
+// PROBE_NO_INVOICES=1 skips the throwaway invoice rows (they would use up real
+// invoice numbers in production; the same policies are covered locally).
+const NO_INVOICES = process.env.PROBE_NO_INVOICES === '1'
+const { data: invoiced } = process.env.VICTIM_EMAIL
+  ? { data: [] }
+  : await svc.from('invoices').select('id, client_id').eq('status', 'issued').limit(1)
+const { data: victims } = process.env.VICTIM_EMAIL
+  ? await svc.from('clients').select('*').eq('email', process.env.VICTIM_EMAIL)
+  : invoiced?.length
   ? await svc.from('clients').select('*').eq('id', invoiced[0].client_id)
   : await svc.from('clients').select('*').not('user_id', 'is', null).limit(1)
 const victim = victims?.[0]
@@ -84,16 +92,20 @@ check('client cannot read the studio price list', (evePrices || []).length === 0
 // --- multi-event booking: drafts stay hidden, writes are studio-only ----------
 const { data: eveEvent } = await svc.from('events').insert({ client_id: eveClientRow.id, name: 'Probe Mehndi' }).select().single()
 await svc.from('event_timelines').insert({ event_id: eveEvent.id, client_id: eveClientRow.id, content: { bricks: [] }, visible: false })
-await svc.from('invoices').insert([
-  { client_id: eveClientRow.id, snapshot: { probe: 'issued' }, status: 'issued' },
-  { client_id: eveClientRow.id, snapshot: { probe: 'void' }, status: 'void' },
-])
+if (!NO_INVOICES) {
+  await svc.from('invoices').insert([
+    { client_id: eveClientRow.id, snapshot: { probe: 'issued' }, status: 'issued' },
+    { client_id: eveClientRow.id, snapshot: { probe: 'void' }, status: 'void' },
+  ])
+}
 const { data: ownEvents } = await eve.from('events').select('id')
 check('client CAN read her own events (control)', (ownEvents || []).length === 1)
 const { data: ownDraft } = await eve.from('event_timelines').select('*')
 check('client cannot see her own UNPUBLISHED timeline', (ownDraft || []).length === 0)
-const { data: ownInvoices } = await eve.from('invoices').select('status')
-check('client sees her issued invoice but not a void one', (ownInvoices || []).length === 1 && ownInvoices[0].status === 'issued', JSON.stringify(ownInvoices))
+if (!NO_INVOICES) {
+  const { data: ownInvoices } = await eve.from('invoices').select('status')
+  check('client sees her issued invoice but not a void one', (ownInvoices || []).length === 1 && ownInvoices[0].status === 'issued', JSON.stringify(ownInvoices))
+}
 
 const { error: evInsErr } = await eve.from('events').insert({ client_id: eveClientRow.id, name: 'Eve event' })
 check('client cannot create events', !!evInsErr)
@@ -106,7 +118,7 @@ await eve.from('event_timelines').update({ visible: true }).eq('event_id', eveEv
 const { data: tlAfter } = await svc.from('event_timelines').select('visible').eq('event_id', eveEvent.id).single()
 check('client cannot publish a timeline', tlAfter.visible === false)
 const { error: invErr } = await eve.from('invoices').insert({ client_id: eveClientRow.id, snapshot: {} })
-check('client cannot create invoices', !!invErr)
+check('client cannot create invoices', !!invErr) // RLS rejects before any number is assigned
 const { error: instErr } = await eve.from('payments').insert({ client_id: eveClientRow.id, kind: 'installment', amount: 5, status: 'received' })
 check('client cannot record a payment', !!instErr)
 const { error: rpcEve } = await eve.rpc('admin_save_booking', { p_client_id: eveClientRow.id, p_events: [] })
