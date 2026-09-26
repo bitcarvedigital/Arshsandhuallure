@@ -89,11 +89,12 @@ export default function Login({ admin }) {
       </Helmet>
       <div className="w-full max-w-[360px]">
         <header className="text-center">
-          <Link to="/" className="font-heading text-[1.05rem] tracking-[0.08em] text-dark hover:text-gold transition-colors duration-300">
+          <Link to="/" className="font-heading text-[1.05rem] tracking-[0.08em] pl-[0.08em] text-dark hover:text-gold transition-colors duration-300">
             Arsh Sandhu Allure
           </Link>
-          <span aria-hidden="true" className="block w-1.5 h-1.5 border border-gold rotate-45 mx-auto mt-3" />
-          <h1 className="font-heading text-[2.6rem] leading-tight text-dark mt-3">
+          {/* margins balance the optical gap: name baseline → dot → heading cap line */}
+          <span aria-hidden="true" className="block w-1.5 h-1.5 border border-gold rotate-45 mx-auto mt-[14px]" />
+          <h1 className="font-heading text-[2.6rem] leading-tight text-dark mt-[10px]">
             <em className="text-gold">{admin ? 'Studio' : 'Client'}</em> Login
           </h1>
           <p className="text-sm text-[#6B5D53] mt-2">
