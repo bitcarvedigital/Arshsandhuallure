@@ -1,8 +1,9 @@
-export const SERVICES = ['hair', 'makeup', 'both']
-export const SKIN_TYPES = ['normal', 'dry', 'oily', 'combination', 'sensitive']
-export const HAIR_LENGTHS = ['short', 'medium', 'long', 'extensions', 'clip_ins']
-export const HAIR_TEXTURES = ['straight', 'wavy', 'curly', 'coily']
-export const PHOTO_SLOTS = ['selfie', 'makeup_inspo', 'hair_inspo', 'additional']
+// One vocabulary for browser + server (pure module shared with src/).
+import {
+  SERVICES, SKIN_TYPES, HAIR_LENGTHS, HAIR_TEXTURES, PHOTO_SLOTS, stripIrrelevant,
+} from '../../src/shared/booking/services.js'
+
+export { SERVICES, SKIN_TYPES, HAIR_LENGTHS, HAIR_TEXTURES, PHOTO_SLOTS }
 export const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
 export const MAX_FILE_BYTES = 10 * 1024 * 1024
 export const MAX_PER_SLOT = 6
@@ -22,25 +23,31 @@ export function enumOrNull(v, allowed) {
 }
 
 // Shared shape for a party-member profile arriving from the public form.
-export function validateMemberProfile(profile = {}) {
+// `allowed` = service choices the booking includes; `eventIds` = the
+// booking's events (anything else is dropped). Answers that don't apply to the
+// chosen service are removed server-side too.
+export function validateMemberProfile(profile = {}, { allowed = SERVICES, eventIds = [] } = {}) {
   const name = str(profile.name, 200)
   if (!name) return { error: 'Name is required' }
-  return {
-    value: {
-      name,
-      relation: str(profile.relation, 200),
-      services: enumOrNull(profile.services, SERVICES),
-      skin_type: enumOrNull(profile.skin_type, SKIN_TYPES),
-      hair_length: enumOrNull(profile.hair_length, HAIR_LENGTHS),
-      hair_texture: enumOrNull(profile.hair_texture, HAIR_TEXTURES),
-      likes: str(profile.likes),
-      dislikes: str(profile.dislikes),
-      foundation_brand: str(profile.foundation_brand, 200),
-      foundation_shade: str(profile.foundation_shade, 200),
-      allergies: str(profile.allergies),
-      skin_concerns: str(profile.skin_concerns),
-    },
-  }
+  let services = enumOrNull(profile.services, SERVICES)
+  if (services && !allowed.includes(services)) services = allowed.length === 1 ? allowed[0] : null
+  if (!services && allowed.length === 1) services = allowed[0]
+  const events = Array.isArray(profile.event_ids) ? profile.event_ids.filter((id) => isUuid(id) && eventIds.includes(id)) : []
+  const value = stripIrrelevant({
+    name,
+    relation: str(profile.relation, 200),
+    services,
+    skin_type: enumOrNull(profile.skin_type, SKIN_TYPES),
+    hair_length: enumOrNull(profile.hair_length, HAIR_LENGTHS),
+    hair_texture: enumOrNull(profile.hair_texture, HAIR_TEXTURES),
+    likes: str(profile.likes),
+    dislikes: str(profile.dislikes),
+    foundation_brand: str(profile.foundation_brand, 200),
+    foundation_shade: str(profile.foundation_shade, 200),
+    allergies: str(profile.allergies),
+    skin_concerns: str(profile.skin_concerns),
+  })
+  return { value: { ...value, event_ids: [...new Set(events)] } }
 }
 
 // photos: { slot: [{kind:'upload', path} | {kind:'link', url}] }

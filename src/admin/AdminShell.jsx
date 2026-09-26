@@ -11,7 +11,7 @@ const NAV = [
 ]
 
 // Shared admin chrome: nav + live pending-review badge (refreshes per route).
-export function AdminShell({ title, children }) {
+export function AdminShell({ title, wide, children }) {
   const { signOut } = useAuth()
   const [badge, setBadge] = useState(0)
   const location = useLocation()
@@ -25,7 +25,7 @@ export function AdminShell({ title, children }) {
   }, [location])
 
   return (
-    <PortalShell title={title} nav={NAV} onSignOut={signOut} badge={badge}>
+    <PortalShell title={title} nav={NAV} onSignOut={signOut} badge={badge} wide={wide}>
       {children}
     </PortalShell>
   )

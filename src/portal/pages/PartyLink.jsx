@@ -40,8 +40,11 @@ export default function PartyLink() {
 
   async function generate() {
     setBusy(true)
-    const expires = client.event_date
-      ? new Date(new Date(`${client.event_date}T00:00:00`).getTime() + 30 * 86400000)
+    // open until 30 days after her LAST event
+    const { data: evs } = await supabase.from('events').select('event_date')
+    const last = (evs || []).map((e) => e.event_date).filter(Boolean).sort().pop() || client.event_date
+    const expires = last
+      ? new Date(new Date(`${last}T00:00:00`).getTime() + 30 * 86400000)
       : new Date(Date.now() + 90 * 86400000)
     const { data } = await supabase
       .from('party_share_tokens')

@@ -85,5 +85,13 @@
       "path": "/api/cron/backup",
       "schedule": "0 10 * * 0"
     }
-  ]
+  ],
+  "functions": {
+    "api/admin/send-invoice.js": {
+      "includeFiles": "api/_assets/fonts/**"
+    },
+    "api/invoice-pdf.js": {
+      "includeFiles": "api/_assets/fonts/**"
+    }
+  }
 }

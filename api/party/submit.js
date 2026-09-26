@@ -1,7 +1,8 @@
 import { supabaseAdmin } from '../_lib/supabaseAdmin.js'
 import { send, methodGuard, getBody, rateLimit } from '../_lib/http.js'
-import { resolvePartyToken } from './info.js'
+import { resolvePartyToken, partyContext } from './info.js'
 import { validateMemberProfile, validatePhotos, isUuid } from '../_lib/validate.js'
+import { stripIrrelevant } from '../../src/shared/booking/services.js'
 
 export default async function handler(req, res) {
   if (!methodGuard(req, res, 'POST')) return
@@ -13,9 +14,12 @@ export default async function handler(req, res) {
   if (!t) return send(res, 403, { error: 'This link is no longer active' })
 
   const id = isUuid(memberId) ? memberId : undefined
-  const prof = validateMemberProfile(profile)
+  const ctx = await partyContext(admin, t.client_id)
+  const prof = validateMemberProfile(profile, { allowed: ctx.allowed, eventIds: ctx.events.map((e) => e.id) })
   if (prof.error) return send(res, 400, { error: prof.error })
   const pics = validatePhotos(photos, { clientId: t.client_id, memberId: id || 'none' })
+  // photos for a service she isn't having are dropped too
+  if (!pics.error) pics.value = stripIrrelevant({ services: prof.value?.services, photos: pics.value }).photos || {}
   if (pics.error) return send(res, 400, { error: pics.error })
 
   const { data: member, error } = await admin

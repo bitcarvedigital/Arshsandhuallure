@@ -29,9 +29,13 @@ const check = (name, ok, detail = '') => {
   ok ? pass++ : fail++
 }
 
-// --- target: the first existing client (Maddy from the golden path) ---------
-const { data: victims } = await svc.from('clients').select('*').not('user_id', 'is', null).limit(1)
+// --- target: a registered client — preferably one with an issued invoice -----
+const { data: invoiced } = await svc.from('invoices').select('id, client_id').eq('status', 'issued').limit(1)
+const { data: victims } = invoiced?.length
+  ? await svc.from('clients').select('*').eq('id', invoiced[0].client_id)
+  : await svc.from('clients').select('*').not('user_id', 'is', null).limit(1)
 const victim = victims?.[0]
+const victimInvoice = invoiced?.[0] || null
 if (!victim) {
   console.error('No registered client found — run the golden path first.')
   process.exit(1)
@@ -56,7 +60,7 @@ await eve.auth.signInWithPassword({ email: eveEmail, password: 'eve-probe-12345'
 const anon = createClient(URL_, ANON, { auth: { persistSession: false } })
 
 // --- cross-client reads (must all be empty) ---------------------------------
-for (const table of ['clients', 'party_members', 'intakes', 'agreements', 'payments', 'client_documents', 'submissions']) {
+for (const table of ['clients', 'party_members', 'intakes', 'agreements', 'payments', 'client_documents', 'submissions', 'events', 'event_line_items', 'event_timelines', 'invoices']) {
   const { data } = await eve.from(table).select('*').eq(table === 'clients' ? 'id' : 'client_id', victim.id)
   check(`Eve cannot read ${table} of another client`, (data || []).length === 0, `${(data || []).length} rows`)
 }
@@ -70,6 +74,51 @@ for (const [client, who] of [[eve, 'Eve'], [anon, 'anon']]) {
 }
 const { data: anonTokens } = await anon.from('party_share_tokens').select('*')
 check('anon sees no party tokens', (anonTokens || []).length === 0)
+for (const table of ['events', 'event_line_items', 'event_timelines', 'invoices']) {
+  const { data } = await anon.from(table).select('*')
+  check(`anon sees nothing in ${table}`, (data || []).length === 0, `${(data || []).length} rows`)
+}
+const { data: evePrices } = await eve.from('app_settings').select('*').eq('key', 'price_list')
+check('client cannot read the studio price list', (evePrices || []).length === 0)
+
+// --- multi-event booking: drafts stay hidden, writes are studio-only ----------
+const { data: eveEvent } = await svc.from('events').insert({ client_id: eveClientRow.id, name: 'Probe Mehndi' }).select().single()
+await svc.from('event_timelines').insert({ event_id: eveEvent.id, client_id: eveClientRow.id, content: { bricks: [] }, visible: false })
+await svc.from('invoices').insert([
+  { client_id: eveClientRow.id, snapshot: { probe: 'issued' }, status: 'issued' },
+  { client_id: eveClientRow.id, snapshot: { probe: 'void' }, status: 'void' },
+])
+const { data: ownEvents } = await eve.from('events').select('id')
+check('client CAN read her own events (control)', (ownEvents || []).length === 1)
+const { data: ownDraft } = await eve.from('event_timelines').select('*')
+check('client cannot see her own UNPUBLISHED timeline', (ownDraft || []).length === 0)
+const { data: ownInvoices } = await eve.from('invoices').select('status')
+check('client sees her issued invoice but not a void one', (ownInvoices || []).length === 1 && ownInvoices[0].status === 'issued', JSON.stringify(ownInvoices))
+
+const { error: evInsErr } = await eve.from('events').insert({ client_id: eveClientRow.id, name: 'Eve event' })
+check('client cannot create events', !!evInsErr)
+await eve.from('events').update({ name: 'Pwned' }).eq('id', eveEvent.id)
+const { data: evAfter } = await svc.from('events').select('name').eq('id', eveEvent.id).single()
+check('client cannot edit her events', evAfter.name === 'Probe Mehndi')
+const { error: liErr } = await eve.from('event_line_items').insert({ event_id: eveEvent.id, client_id: eveClientRow.id, kind: 'discount', label: 'Free!', unit_price: 9999 })
+check('client cannot add price lines (e.g. a discount)', !!liErr)
+await eve.from('event_timelines').update({ visible: true }).eq('event_id', eveEvent.id)
+const { data: tlAfter } = await svc.from('event_timelines').select('visible').eq('event_id', eveEvent.id).single()
+check('client cannot publish a timeline', tlAfter.visible === false)
+const { error: invErr } = await eve.from('invoices').insert({ client_id: eveClientRow.id, snapshot: {} })
+check('client cannot create invoices', !!invErr)
+const { error: instErr } = await eve.from('payments').insert({ client_id: eveClientRow.id, kind: 'installment', amount: 5, status: 'received' })
+check('client cannot record a payment', !!instErr)
+const { error: rpcEve } = await eve.rpc('admin_save_booking', { p_client_id: eveClientRow.id, p_events: [] })
+check('client cannot run admin_save_booking', !!rpcEve, rpcEve?.message?.slice(0, 40))
+const { error: rpcAnon } = await anon.rpc('admin_save_booking', { p_client_id: eveClientRow.id, p_events: [] })
+check('anon cannot run admin_save_booking', !!rpcAnon, rpcAnon?.message?.slice(0, 40))
+const { data: eveEventsAfterRpc } = await svc.from('events').select('id').eq('client_id', eveClientRow.id)
+check('…and her events survived both attempts', (eveEventsAfterRpc || []).length === 1)
+for (const [fn, args] of [['refresh_client_booking', { p_client_id: victim.id }], ['client_has_service', { p_client_id: victim.id, p_service: 'hair' }]]) {
+  const { error } = await eve.rpc(fn, args)
+  check(`client cannot call internal ${fn}`, !!error, error?.message?.slice(0, 40))
+}
 
 // --- forbidden writes ---------------------------------------------------------
 const { error: amtErr } = await eve.from('clients').update({ amount_total: 1 }).eq('id', eveClientRow.id)
@@ -133,6 +182,17 @@ check('bogus party token rejected', bogus.json?.valid === false)
 const { data: eveSession } = await eve.auth.getSession()
 const adminAsEve = await post('/api/admin/create-client', { fullName: 'X', email: 'x@x.com' }, { Authorization: `Bearer ${eveSession.session.access_token}` })
 check('client JWT rejected on admin endpoint', adminAsEve.status === 401, `status ${adminAsEve.status}`)
+
+const sendAsEve = await post('/api/admin/send-invoice', { clientId: eveClientRow.id }, { Authorization: `Bearer ${eveSession.session.access_token}` })
+check('client JWT rejected on send-invoice', sendAsEve.status === 401, `status ${sendAsEve.status}`)
+const previewAsEve = await post('/api/invoice-pdf', { preview: true, clientId: victim.id }, { Authorization: `Bearer ${eveSession.session.access_token}` })
+check('client cannot preview invoices', previewAsEve.status === 401, `status ${previewAsEve.status}`)
+if (victimInvoice) {
+  const stealPdf = await post('/api/invoice-pdf', { invoiceId: victimInvoice.id }, { Authorization: `Bearer ${eveSession.session.access_token}` })
+  check('client cannot download another client’s invoice PDF', stealPdf.status === 404, `status ${stealPdf.status}`)
+}
+const pdfAnon = await post('/api/invoice-pdf', { invoiceId: victimInvoice?.id || '00000000-0000-0000-0000-000000000000' })
+check('anon cannot download invoice PDFs', pdfAnon.status === 401, `status ${pdfAnon.status}`)
 
 const hookNoSecret = await post('/api/hooks/submission-created', { type: 'INSERT', table: 'submissions', record: { id: 'x' } })
 check('webhook without secret rejected', hookNoSecret.status === 401, `status ${hookNoSecret.status}`)

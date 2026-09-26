@@ -1,6 +1,10 @@
 // Seed the LOCAL Supabase stack with the two admin users.
 //   node scripts/seed-local.mjs
 // Reads SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY from .env.local.
+//
+// Local-only test bride created through the UI during round-2 testing
+// (2026-09-25): bhanumalhi+bride1@gmail.com / Bride-Test-2027! — exists only
+// in a local DB, never in production.
 import { createClient } from '@supabase/supabase-js'
 import { readFileSync, existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'

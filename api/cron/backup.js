@@ -8,7 +8,7 @@ import { sendEmail } from '../_lib/email.js'
 const TABLES = [
   'admins', 'clients', 'admin_notes', 'party_members', 'intakes', 'agreement_terms',
   'agreements', 'client_documents', 'payments', 'submissions', 'app_settings',
-  'invite_tokens', 'party_share_tokens',
+  'invite_tokens', 'party_share_tokens', 'events', 'event_line_items', 'event_timelines', 'invoices',
 ]
 const KEEP = 12
 

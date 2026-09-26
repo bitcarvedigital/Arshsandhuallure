@@ -5,7 +5,8 @@ import { useAuth } from '../AuthProvider'
 import { loadPortalBundle } from '../lib/data'
 import { deriveJourney } from '../lib/journey'
 import PortalShell from '../../shared/PortalShell'
-import { StatusChip, Spinner, DiamondRule, fmtDate } from '../../shared/ui'
+import { StatusChip, Spinner, DiamondRule, fmtDate, fmtShortDate } from '../../shared/ui'
+import { sortEvents } from '../../shared/booking/pricing.js'
 
 const NAV = [
   { to: '/portal', label: 'Journey' },
@@ -70,11 +71,21 @@ export default function Dashboard() {
         <h1 className="font-heading text-3xl md:text-4xl text-dark">
           {(client?.full_name || '').split(' ')[0]}
         </h1>
-        {client?.event_date && (
-          <p className="text-sm text-[#7A6355] mt-2">
-            {client.event_type ? `${client.event_type} · ` : ''}
-            {fmtDate(client.event_date)}
-          </p>
+        {bundle?.events?.length > 1 ? (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {sortEvents(bundle.events).map((e) => (
+              <span key={e.id} className="text-[10px] tracking-[0.15em] uppercase border border-[#C8B8AC] px-2.5 py-1 text-[#5A4A40]">
+                {e.name || e.event_type} · {fmtShortDate(e.event_date)}
+              </span>
+            ))}
+          </div>
+        ) : (
+          client?.event_date && (
+            <p className="text-sm text-[#7A6355] mt-2">
+              {client.event_type ? `${client.event_type} · ` : ''}
+              {fmtDate(client.event_date)}
+            </p>
+          )
         )}
         <DiamondRule className="mt-6" />
       </div>

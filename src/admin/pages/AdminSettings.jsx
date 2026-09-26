@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../portal/AuthProvider'
 import { AdminShell } from '../AdminShell'
-import { Field, Btn, ErrorNote, DiamondRule, SectionHeading, MicroLabel, PasswordField } from '../../shared/ui'
+import { Field, Btn, ErrorNote, SectionHeading, FormSection, PasswordField } from '../../shared/ui'
+import PriceListEditor from './PriceListEditor'
 
 export default function AdminSettings() {
   const { session } = useAuth()
@@ -67,39 +68,47 @@ export default function AdminSettings() {
     <AdminShell title="Settings">
       <SectionHeading eyebrow="Studio Settings" title="How the portal runs" className="mb-8" />
 
-      <form onSubmit={saveBiz} className="max-w-md flex flex-col gap-6">
-        <MicroLabel>Business</MicroLabel>
-        <Field
-          label="E-transfer address shown to clients"
-          type="email"
-          value={etransfer}
-          onChange={(e) => setEtransfer(e.target.value)}
-          placeholder="payments@…"
-        />
-        <Field
-          label="Where submission alerts are emailed"
-          type="email"
-          value={notify}
-          onChange={(e) => setNotify(e.target.value)}
-          placeholder="you@…"
-        />
-        {bizMsg && <p className="text-gold text-sm">{bizMsg}</p>}
-        <Btn type="submit" className="self-start">Save</Btn>
-      </form>
+      <div className="max-w-2xl">
+        <form onSubmit={saveBiz}>
+          <FormSection title="Business">
+            <Field
+              label="E-transfer address shown to clients"
+              type="email"
+              value={etransfer}
+              onChange={(e) => setEtransfer(e.target.value)}
+              placeholder="payments@…"
+            />
+          </FormSection>
+          <FormSection title="Notifications" hint="New submissions and your copy of every invoice go here.">
+            <Field
+              label="Where submission alerts are emailed"
+              type="email"
+              value={notify}
+              onChange={(e) => setNotify(e.target.value)}
+              placeholder="you@…"
+            />
+            {bizMsg && <p className="text-gold text-sm">{bizMsg}</p>}
+            <Btn type="submit" className="self-start">Save</Btn>
+          </FormSection>
+        </form>
 
-      <DiamondRule className="my-10 max-w-md" />
+        <FormSection title="Price list" hint="Your standard prices. They fill in automatically when you add a service to a booking — you can still change any price per client.">
+          <PriceListEditor />
+        </FormSection>
 
-      <form onSubmit={changePassword} className="max-w-md flex flex-col gap-6">
-        <MicroLabel>Change your password</MicroLabel>
-        <PasswordField label="Current password" required value={current} onChange={(e) => setCurrent(e.target.value)} autoComplete="current-password" />
-        <PasswordField label="New password" required value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" />
-        <PasswordField label="Confirm new password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
-        <ErrorNote>{pwErr}</ErrorNote>
-        {pwMsg && <p className="text-gold text-sm">{pwMsg}</p>}
-        <Btn type="submit" disabled={busy} className="self-start">
-          {busy ? 'Updating…' : 'Update password'}
-        </Btn>
-      </form>
+        <form onSubmit={changePassword}>
+          <FormSection title="Change your password">
+            <PasswordField label="Current password" required value={current} onChange={(e) => setCurrent(e.target.value)} autoComplete="current-password" />
+            <PasswordField label="New password" required value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" />
+            <PasswordField label="Confirm new password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
+            <ErrorNote>{pwErr}</ErrorNote>
+            {pwMsg && <p className="text-gold text-sm">{pwMsg}</p>}
+            <Btn type="submit" disabled={busy} className="self-start">
+              {busy ? 'Updating…' : 'Update password'}
+            </Btn>
+          </FormSection>
+        </form>
+      </div>
     </AdminShell>
   )
 }

@@ -11,7 +11,7 @@ export default function PartyForm() {
   const { token } = useParams()
   const navigate = useNavigate()
   const [info, setInfo] = useState(undefined)
-  const [member, setMember] = useState({ name: '', photos: {} })
+  const [member, setMember] = useState({ name: '', photos: {}, event_ids: [] })
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const draftId = useRef(crypto.randomUUID())
@@ -42,6 +42,10 @@ export default function PartyForm() {
     if (!member.name?.trim()) {
       setError('Please add your name.')
       window.scrollTo({ top: 0 })
+      return
+    }
+    if (!member.services) {
+      setError('Please choose the service you’re booked for.')
       return
     }
     setBusy(true)
@@ -93,6 +97,9 @@ export default function PartyForm() {
             <MemberProfileForm
               value={member}
               onChange={setMember}
+              allowedServices={info.allowedServices?.length ? info.allowedServices : undefined}
+              events={info.events || []}
+              showEvents
               uploadFile={uploadFile}
               resolveUrl={async (path) => previews.current[path] || ''}
             />

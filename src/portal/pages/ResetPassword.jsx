@@ -2,10 +2,13 @@ import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
-import { Field, Btn, ErrorNote, DiamondRule, MicroLabel, PasswordField } from '../../shared/ui'
+import { Btn, ErrorNote, DiamondRule, MicroLabel, PasswordField } from '../../shared/ui'
+import { resolveRole } from '../AuthProvider'
 
 // Landing page for Supabase recovery links (session arrives via the URL hash).
-export default function ResetPassword() {
+// Afterwards each account goes to its own portal (studio or client) — older
+// reset emails all point at /portal/reset, so the role decides, not the URL.
+export default function ResetPassword({ admin }) {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
@@ -18,13 +21,15 @@ export default function ResetPassword() {
     if (password.length < 8) return setError('Password must be at least 8 characters.')
     if (password !== confirm) return setError('The two passwords don’t match.')
     setBusy(true)
-    const { error: err } = await supabase.auth.updateUser({ password })
-    setBusy(false)
+    const { data, error: err } = await supabase.auth.updateUser({ password })
     if (err) {
+      setBusy(false)
       setError('This reset link may have expired — please request a new one from the login page.')
       return
     }
-    navigate('/portal', { replace: true })
+    const role = await resolveRole(data.user?.id)
+    setBusy(false)
+    navigate(role.isAdmin && (admin || !role.client) ? '/admin' : '/portal', { replace: true })
   }
 
   return (
@@ -36,7 +41,7 @@ export default function ResetPassword() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
           <p className="font-heading text-2xl text-dark">Arsh Sandhu Allure</p>
-          <MicroLabel className="mt-3">Choose a new password</MicroLabel>
+          <MicroLabel className="mt-3">{admin ? 'Studio · ' : ''}Choose a new password</MicroLabel>
           <DiamondRule className="mt-6" />
         </div>
         <form onSubmit={submit} className="flex flex-col gap-6">

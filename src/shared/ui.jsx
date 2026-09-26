@@ -32,6 +32,61 @@ export function SectionHeading({ eyebrow, title, className = '' }) {
   )
 }
 
+// A page section: small gold subheading + hairline, optional one-line hint,
+// then the questions that belong to it. Pages read top to bottom as a stack of
+// these (Bhagesh, 2026-09-25: "small subheading, questions listed below").
+export function FormSection({ title, hint, action, children, className = '' }) {
+  return (
+    <section className={`mb-12 ${className}`}>
+      <div className="flex items-end justify-between gap-3 flex-wrap">
+        <MicroLabel>{title}</MicroLabel>
+        {action}
+      </div>
+      <div className="h-px bg-gold/30 mt-2" />
+      {hint && <p className="text-xs text-[#8A7A70] mt-3 max-w-xl leading-relaxed">{hint}</p>}
+      <div className="flex flex-col gap-6 mt-6">{children}</div>
+    </section>
+  )
+}
+
+export function InfoRow({ label, value }) {
+  return (
+    <div className="flex justify-between gap-4 py-2.5 border-b border-[#EFE6DA] text-sm">
+      <span className="text-[#7A6355] shrink-0">{label}</span>
+      <span className="text-dark text-right break-words min-w-0">{value ?? '—'}</span>
+    </div>
+  )
+}
+
+export const AUTOFILL_COPY = {
+  new: 'Auto-filled from your booking — tap to check it’s correct.',
+  saved: 'This was auto-filled — please double-check it.',
+  admin: 'Auto-filled — not checked by the client yet',
+}
+
+// Wraps any field that was pre-filled from the booking. The highlight and note
+// stay until the person clicks / focuses into the field (onAcknowledge), which
+// removes the marker for good. `state` is 'new' | 'saved' | undefined.
+export function AutofillWrap({ state, onAcknowledge, readOnly, children }) {
+  if (!state) return children
+  const ack = () => {
+    if (!readOnly && onAcknowledge) onAcknowledge()
+  }
+  return (
+    <div
+      onFocusCapture={ack}
+      onClickCapture={ack}
+      className="bg-[#F4E9DA] border-l-2 border-gold -mx-3 px-3 pt-2 pb-2.5"
+    >
+      {children}
+      <p className="text-[11px] leading-snug text-gold mt-2 flex items-start gap-2">
+        <span className="w-1.5 h-1.5 border border-gold rotate-45 shrink-0 mt-1" aria-hidden="true" />
+        {readOnly ? AUTOFILL_COPY.admin : AUTOFILL_COPY[state] || AUTOFILL_COPY.new}
+      </p>
+    </div>
+  )
+}
+
 export function Field({ label, required, ...props }) {
   return (
     <div className="flex flex-col gap-2">
@@ -114,7 +169,7 @@ export function Select({ label, required, options, placeholder, ...props }) {
 export function ChoiceRow({ label, options, value, onChange, disabled }) {
   return (
     <div className="flex flex-col gap-2">
-      <span className={labelClass}>{label}</span>
+      {label && <span className={labelClass}>{label}</span>}
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (
           <button
@@ -219,3 +274,13 @@ export function fmtTime(t) {
   dt.setHours(Number(h), Number(m))
   return dt.toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit' })
 }
+
+export function fmtShortDate(d) {
+  if (!d) return 'Date TBC'
+  const dt = new Date(`${String(d).slice(0, 10)}T00:00:00`)
+  return dt.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+// compact input for tables (qty, prices) — same underline language as Field
+export const cellInputClass =
+  'bg-transparent border-b border-[#C8B8AC] py-2 text-dark text-sm focus:outline-none focus:border-gold transition-colors w-full'

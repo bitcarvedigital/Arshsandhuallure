@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 
 // Chrome for every signed-in page (client portal + admin). Print styles hide
 // the shell so any page can become a clean "Save as PDF".
-export default function PortalShell({ title, nav = [], onSignOut, badge, children }) {
+export default function PortalShell({ title, nav = [], onSignOut, badge, wide, children }) {
   return (
     <div className="min-h-screen bg-beige text-dark font-body">
       <Helmet>
@@ -11,11 +11,11 @@ export default function PortalShell({ title, nav = [], onSignOut, badge, childre
         <meta name="robots" content="noindex" />
       </Helmet>
       <header className="border-b border-[#C8B8AC] bg-[#EDE5DD] print:hidden">
-        <div className="max-w-4xl mx-auto px-5 py-4 flex items-center justify-between gap-4">
+        <div className="max-w-4xl mx-auto px-5 py-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <Link to="/" className="font-heading text-lg tracking-wide whitespace-nowrap">
             Arsh Sandhu Allure
           </Link>
-          <div className="flex items-center gap-5">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 sm:gap-x-5">
             {nav.map((item) => (
               <Link
                 key={item.to}
@@ -41,7 +41,7 @@ export default function PortalShell({ title, nav = [], onSignOut, badge, childre
           </div>
         </div>
       </header>
-      <main className="max-w-4xl mx-auto px-5 py-10">{children}</main>
+      <main className={`${wide ? 'max-w-6xl' : 'max-w-4xl'} mx-auto px-5 py-10`}>{children}</main>
       <footer className="print:hidden max-w-4xl mx-auto px-5 pb-10 pt-6 text-center">
         <p className="text-[10px] tracking-[0.25em] uppercase text-[#8A7A70]">
           Where Elegance Meets Artistry ·{' '}

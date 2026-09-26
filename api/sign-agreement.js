@@ -1,6 +1,8 @@
 import { requireClient } from './_lib/auth.js'
 import { send, methodGuard, getBody, getIp } from './_lib/http.js'
 import { str } from './_lib/validate.js'
+import { loadBooking } from './_lib/booking.js'
+import { buildAgreementSnapshot } from '../src/shared/booking/pricing.js'
 
 export default async function handler(req, res) {
   if (!methodGuard(req, res, 'POST')) return
@@ -31,23 +33,13 @@ export default async function handler(req, res) {
     .single()
   const termsVersion = latestTerms?.version || 1
 
-  // freeze what she is agreeing to, from the source of truth (clients row)
-  const snapshot = {
-    full_name: client.full_name,
-    email: client.email,
-    phone: client.phone,
-    event_type: client.event_type,
-    event_date: client.event_date,
-    ready_time: client.ready_time,
-    getting_ready_address: client.getting_ready_address,
-    services: client.services,
-    party_size: client.party_size,
-    amount_services: client.amount_services,
-    amount_travel: client.amount_travel,
-    amount_total: client.amount_total,
-    amount_retainer: client.amount_retainer,
-    amount_balance: client.amount_balance,
+  // freeze what she is agreeing to: every event, every priced line, and the
+  // DB-derived totals (clients row is the single source of truth for totals)
+  const { events, lines } = await loadBooking(admin, client.id)
+  if (!events.length || client.amount_total == null) {
+    return send(res, 400, { error: 'Your quote isn’t ready to sign yet — Arsh will let you know when it is' })
   }
+  const snapshot = buildAgreementSnapshot(client, events, lines)
 
   const { count } = await admin
     .from('agreements')

@@ -2,16 +2,26 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { AdminShell } from '../AdminShell'
-import { Btn, Spinner, StatusChip, DiamondRule, SectionHeading, fmtTime } from '../../shared/ui'
+import { Btn, Spinner, StatusChip, DiamondRule, SectionHeading } from '../../shared/ui'
 
 const DIFF_DOT = { easy: 'bg-[#7a9070]', medium: 'bg-[#c9a25e]', hard: 'bg-[#a45a48]' }
 
+const today = () => new Date().toLocaleDateString('en-CA')
+const short = (d) => new Date(`${d}T00:00:00`).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })
+
+// next upcoming event date, else the last one; and the last date overall
+function eventDates(client) {
+  const dates = (client.events || []).map((e) => e.event_date).filter(Boolean).sort()
+  if (!dates.length && client.event_date) dates.push(client.event_date)
+  const t = today()
+  return { next: dates.find((d) => d >= t) || null, last: dates[dates.length - 1] || null }
+}
+
 function ClientCard({ client }) {
   const notes = Array.isArray(client.admin_notes) ? client.admin_notes[0] : client.admin_notes
-  const days =
-    client.event_date != null
-      ? Math.ceil((new Date(`${client.event_date}T00:00:00`) - new Date()) / 86400000)
-      : null
+  const { next } = eventDates(client)
+  const days = next != null ? Math.round((new Date(`${next}T00:00:00`) - new Date(`${today()}T00:00:00`)) / 86400000) : null
+  const events = [...(client.events || [])].sort((a, b) => String(a.event_date || '9999').localeCompare(String(b.event_date || '9999')))
   return (
     <Link
       to={`/admin/clients/${client.id}`}
@@ -24,16 +34,17 @@ function ClientCard({ client }) {
           )}
           <h3 className="font-heading text-lg text-dark truncate">{client.full_name}</h3>
         </div>
-        <p className="text-xs text-[#8A7A70] mt-1 truncate">
-          {[
-            client.event_type,
-            client.event_date,
-            client.booked_time ? fmtTime(client.booked_time) : null,
-            client.party_size ? `${client.party_size} people` : null,
-          ]
-            .filter(Boolean)
-            .join(' · ') || 'No event details yet'}
-        </p>
+        {events.length ? (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {events.map((e, i) => (
+              <span key={i} className="text-[10px] tracking-[0.12em] uppercase border border-[#D8C8BA] px-2 py-0.5 text-[#5A4A40]">
+                {e.name || e.event_type}{e.event_date ? ` · ${short(e.event_date)}` : ''}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-[#8A7A70] mt-1">No event details yet</p>
+        )}
       </div>
       <div className="flex flex-col items-end gap-1.5 shrink-0">
         {client.status === 'invited' && <StatusChip status="draft" label="Invite pending" />}
@@ -54,15 +65,17 @@ export default function ClientList() {
   useEffect(() => {
     supabase
       .from('clients')
-      .select('*, admin_notes ( difficulty )')
+      .select('*, admin_notes ( difficulty ), events ( name, event_type, event_date )')
       .order('event_date', { ascending: true, nullsFirst: false })
       .then(({ data }) => setClients(data || []))
   }, [])
 
-  const today = new Date().toISOString().slice(0, 10)
+  const t = today()
   const active = (clients || []).filter((c) => c.status !== 'archived')
-  const upcoming = active.filter((c) => !c.event_date || c.event_date >= today)
-  const past = active.filter((c) => c.event_date && c.event_date < today)
+  const nextKey = (c) => eventDates(c).next || '9999-12-31'
+  // upcoming until her LAST event has passed; ordered by her next event
+  const upcoming = active.filter((c) => !eventDates(c).last || eventDates(c).last >= t).sort((a, b) => nextKey(a).localeCompare(nextKey(b)))
+  const past = active.filter((c) => eventDates(c).last && eventDates(c).last < t)
   const archived = (clients || []).filter((c) => c.status === 'archived')
 
   return (
