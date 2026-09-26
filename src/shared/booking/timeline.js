@@ -295,7 +295,7 @@ function parseRange(text) {
 //   their target time as the artists allow, so nobody sits around
 // • the bride is done by the best artist for each part (each artist's
 //   "best at") and finishes `brideEarly` minutes before the ready time, in
-//   time for first-look photos
+//   time for first-look photos (0 = done with everyone else, before touch-ups)
 // • important people get ready alongside her and are done around the same
 //   time (1–2 hours early), not at the very end
 // • the last `buffer` minutes stay free for touch-ups
@@ -310,7 +310,10 @@ export function artistSkill(col, index) {
 export function autoPlan(content, { serviceMinutes = SERVICE_MINUTES } = {}) {
   const readyBy = parseTime(content.anchor) ?? 540
   const touchUp = Math.max(0, Number(content.buffer) || 0)
-  const brideEarly = Math.max(touchUp, Number(content.brideEarly ?? 90) || 0)
+  // what Arsh picked (0 = same as the ready time) is saved as-is; for planning the
+  // bride still finishes before the touch-up window, like everyone else
+  const brideChoice = Math.max(0, Number(content.brideEarly ?? 90) || 0)
+  const brideEarly = Math.max(touchUp, brideChoice)
   const end = readyBy - touchUp
   const brideEnd = readyBy - brideEarly
   const artists = content.columns.map((c, i) => ({ id: c.id, skill: artistSkill(c, i), busy: [] }))
@@ -448,5 +451,5 @@ export function autoPlan(content, { serviceMinutes = SERVICE_MINUTES } = {}) {
   }
   // anyone without a service stays in the tray
   const unplaced = content.bricks.filter((b) => b.kind !== 'gap' && !b.service).map((b) => ({ ...b, column: null }))
-  return { ...content, mode: 'ready_by', buffer: touchUp, brideEarly, bricks: [...bricks, ...unplaced] }
+  return { ...content, mode: 'ready_by', buffer: touchUp, brideEarly: brideChoice, bricks: [...bricks, ...unplaced] }
 }

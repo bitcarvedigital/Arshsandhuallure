@@ -450,11 +450,11 @@ export default function TimelineBuilder({ client, event, row, lines, members, le
           </div>
           {content.mode === 'ready_by' && (
             <div className="flex flex-col gap-2">
-              <span className={labelClass}>Bride done before the ready time (first-look photos)</span>
+              <span className={labelClass}>Bride done before the ready time</span>
               <div className="flex flex-wrap gap-2" role="group" aria-label="Bride done before the ready time">
-                {[60, 90, 120].map((m) => (
+                {[0, 60, 90, 120].map((m) => (
                   <button key={m} type="button" aria-pressed={(content.brideEarly ?? 90) === m} onClick={() => update((c) => ({ ...c, brideEarly: m }))} className={segmentClass((content.brideEarly ?? 90) === m)}>
-                    {m === 60 ? '1 hour' : m === 90 ? '1½ hours' : '2 hours'}
+                    {m === 0 ? 'Same as ready time' : m === 60 ? '1 hour' : m === 90 ? '1½ hours' : '2 hours'}
                   </button>
                 ))}
               </div>
