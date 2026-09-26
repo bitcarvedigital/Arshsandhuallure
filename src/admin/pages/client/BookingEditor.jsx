@@ -119,7 +119,9 @@ function EventEditor({ event, index, count, priceList, onChange, onRemove, onMov
     else addLine({ kind: 'fee', code: p.code, label: p.label, unit_price: '', ...patch })
   }
 
-  const title = (event.name || event.event_type || 'Event').trim()
+  // the heading mirrors the name box above exactly — cleared name, cleared heading
+  const name = (event.name || '').trim()
+  const title = name || 'Untitled event'
   // saved events start folded on the Overview; new ones start open
   const sid = scope ? `${scope}:ev:${event.key}` : null
   const [open, setOpen] = useSectionOpen(sid, !(collapsed && event.id))
@@ -140,7 +142,7 @@ function EventEditor({ event, index, count, priceList, onChange, onRemove, onMov
           <span className="min-w-0">
             <span className="block text-[10px] tracking-[0.3em] uppercase text-gold">Event {index + 1} of {count}</span>
             <span className="block font-heading text-2xl text-dark mt-1 group-hover:text-gold transition-colors">
-              {title} <span className="text-base text-faint">· {fmtShortDate(event.event_date)}</span>
+              {name || <span className="text-ghost italic">Untitled event</span>} <span className="text-base text-faint">· {fmtShortDate(event.event_date)}</span>
             </span>
             {!open && <span className="block text-sm text-muted mt-1">{eventSummary}</span>}
           </span>
