@@ -89,14 +89,7 @@ export default function Login({ admin }) {
         <div className="text-center mb-10">
           <Link to="/" className="font-heading text-xl text-dark">Arsh Sandhu Allure</Link>
           <DiamondRule className="mt-5" />
-          <span
-            className={`inline-block mt-7 px-4 py-1.5 text-[10px] tracking-[0.3em] uppercase ${
-              admin ? 'bg-btn-dark text-beige' : 'border border-gold text-gold'
-            }`}
-          >
-            {admin ? 'Studio · team only' : 'Client portal'}
-          </span>
-          <h1 className="font-heading text-4xl text-dark mt-4">
+          <h1 className="font-heading text-4xl text-dark mt-7">
             <em className="text-gold">{admin ? 'Studio' : 'Client'}</em> Login
           </h1>
           <p className="text-sm text-[#6B5D53] mt-2">
