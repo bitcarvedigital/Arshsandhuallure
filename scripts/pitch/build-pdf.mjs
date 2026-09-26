@@ -417,14 +417,15 @@ pages.push(await layoutPage({
   title: 'Branded invoices, emailed and in her portal',
   intro: 'Send an invoice from her Payments tab. She gets a PDF by email, and the same invoice waits on her payments page.',
   images: [
-    { src: 'pdf-invoice-p1', cap: 'The invoice PDF she receives.' },
+    { src: 'pdf-invoice-p1', cap: 'The invoice PDF: every event, line by line.' },
+    { src: 'pdf-invoice-p2', cap: 'Totals, payments received, and the amount due with how to pay.' },
     { src: 'email-invoice', cap: 'The email it arrives in, with a copy to you.' },
-    { src: 'client-invoice', cap: 'The same invoice in her portal, with “Download PDF”.' },
   ],
   notes: [
     { b: 'Numbered for you', p: 'Every invoice gets the next number in sequence and freezes the prices and payments as they stood.' },
     { b: 'Amount due, your call', p: 'Invoice the retainer, a part-payment or the full balance, with a due date and a note.' },
     { b: 'Preview first', p: 'See the invoice on screen or as a PDF before it goes. Re-send or void it later.' },
+    { b: 'Waiting in her portal', p: 'The same invoice sits on her payments page, ready to view or download.' },
   ],
 }))
 pages.push(await layoutPage({
@@ -605,7 +606,7 @@ pages.push(await layoutPage({
   title: 'Her whole booking on one page',
   intro: 'Her Overview holds her details, portal access, every event and the running totals. One save bar at the bottom.',
   images: [
-    { src: 'overview-top', cap: 'The warning you see when a booking changes after she signed, her details and portal access.' },
+    { src: 'overview-top', cap: 'The changed-since-signing warning, her details and portal access.' },
     { src: 'overview-events', cap: 'Events fold into one line each. Open all or close all.' },
     { src: 'overview-event-prices', cap: 'An open event: services, prices, fees and the event total.' },
   ],

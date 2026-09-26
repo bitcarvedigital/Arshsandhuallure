@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { createRequire } from 'node:module'
 import { makeDb, CLIENT_ID, BRIDE_ID, KIRAN, INVOICE_ID, PARTY_TOKEN } from './fixtures.mjs'
 import { attachMock, seedSession } from './mock.mjs'
-import { REPLACEMENTS } from './brand.mjs'
+import { BRAND, REPLACEMENTS } from './brand.mjs'
 
 const require = createRequire(import.meta.url)
 const sharp = require('sharp')
@@ -45,7 +45,9 @@ async function go(page, path) {
   await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle' })
 }
 
-// swap the real studio's name and details for the placeholder brand
+// swap the real studio's name and details for the placeholder brand, and the
+// local dev address (in share links) for the placeholder domain
+const PAGE_REPLACEMENTS = [[BASE, `https://${BRAND.domain}`], ...REPLACEMENTS]
 async function rebrand(page) {
   await page.evaluate((reps) => {
     const fix = (t) => reps.reduce((acc, [a, b]) => acc.split(a).join(b), t)
@@ -63,7 +65,7 @@ async function rebrand(page) {
       }
       if (el.placeholder) el.placeholder = fix(el.placeholder)
     }
-  }, REPLACEMENTS)
+  }, PAGE_REPLACEMENTS)
 }
 
 const skip = (name) => ONLY && !ONLY.test(name)
@@ -388,7 +390,11 @@ async function shot(page, name, { full = true, regions = null, box = 'main', pad
   await shot(page, 'phone-profile', { full: false })
   await go(page, '/portal/docs/timeline')
   await page.locator('[aria-label="Choose an event"] button', { hasText: 'Wedding' }).click()
-  await page.evaluate(() => window.scrollTo(0, 330))
+  // start the phone frame just above the event picker, never mid-line
+  await page.evaluate(() => {
+    const el = document.querySelector('[aria-label="Choose an event"]')
+    window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 20)
+  })
   await shot(page, 'phone-timeline', { full: false })
   await context.close()
 }

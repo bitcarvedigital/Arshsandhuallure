@@ -46,10 +46,11 @@ const PDFJS = dirname(require.resolve('pdfjs-dist/package.json'))
 const TYPES = { '.mjs': 'text/javascript', '.js': 'text/javascript', '.pdf': 'application/pdf', '.html': 'text/html', '.map': 'application/json' }
 const VIEW = `<!doctype html><body style="margin:0;background:#fff">
 <script type="module">
-import * as pdfjs from '/pdfjs/build/pdf.mjs'
-pdfjs.GlobalWorkerOptions.workerSrc = '/pdfjs/build/pdf.worker.mjs'
+import * as pdfjs from '/pdfjs/legacy/build/pdf.mjs'
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdfjs/legacy/build/pdf.worker.mjs'
 const f = new URLSearchParams(location.search).get('f')
-const pdf = await pdfjs.getDocument('/pdf/' + f).promise
+try {
+const pdf = await pdfjs.getDocument({ url: '/pdf/' + f, disableFontFace: false, useSystemFonts: false }).promise
 for (let n = 1; n <= pdf.numPages; n++) {
   const page = await pdf.getPage(n)
   const vp = page.getViewport({ scale: 2.4 })
@@ -59,6 +60,7 @@ for (let n = 1; n <= pdf.numPages; n++) {
   await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise
 }
 document.body.dataset.pages = pdf.numPages
+} catch (e) { document.body.dataset.error = String(e && e.stack || e); document.body.dataset.pages = 0 }
 </script></body>`
 
 const server = createServer((req, res) => {
@@ -79,12 +81,18 @@ const server = createServer((req, res) => {
 })
 await new Promise((r) => server.listen(5191, '127.0.0.1', r))
 
-const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium' })
+// --no-proxy-server: this page is served locally; never send it through an HTTP(S)_PROXY
+const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium', args: ['--no-proxy-server'] })
 const page = await browser.newPage({ viewport: { width: 1500, height: 1000 } })
+page.on('console', (m) => m.type() === 'error' && console.log('  console:', m.text().slice(0, 200)))
+page.on('pageerror', (e) => console.log('  pageerror:', e.message.slice(0, 200)))
+page.on('response', (r) => r.status() >= 400 && console.log('  ', r.status(), r.url()))
 for (const name of ['invoice', 'timeline']) {
   await page.goto(`http://127.0.0.1:5191/view.html?f=${name}.pdf`)
-  await page.waitForSelector('body[data-pages]', { timeout: 30000 })
+  await page.waitForSelector('body[data-pages]', { state: 'attached', timeout: 90000 })
   const pages = Number(await page.getAttribute('body', 'data-pages'))
+  const err = await page.getAttribute('body', 'data-error')
+  if (err) throw new Error(`pdf.js could not render ${name}: ${err}`)
   for (let n = 1; n <= pages; n++) {
     await page.locator(`#p${n}`).screenshot({ path: join(SHOTS, `pdf-${name}-p${n}.png`) })
     console.log(`✓ pdf-${name}-p${n}`)
