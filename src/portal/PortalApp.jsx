@@ -11,6 +11,7 @@ import PartyLink from './pages/PartyLink'
 import Docs from './pages/Docs'
 import DocView from './pages/DocView'
 import Settings from './pages/Settings'
+import Invoice from './pages/Invoice'
 
 export default function PortalApp() {
   return (
@@ -27,6 +28,7 @@ export default function PortalApp() {
         <Route path="docs" element={<RequireClient><Docs /></RequireClient>} />
         <Route path="docs/:docType" element={<RequireClient><DocView /></RequireClient>} />
         <Route path="settings" element={<RequireClient><Settings /></RequireClient>} />
+        <Route path="invoice/:id" element={<RequireClient><Invoice /></RequireClient>} />
         <Route path="*" element={<Navigate to="/portal" replace />} />
       </Routes>
     </AuthProvider>

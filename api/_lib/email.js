@@ -18,12 +18,12 @@ const WRAP = (heading, bodyHtml, ctaText, ctaUrl) => `
   </div>
 </div>`
 
-export async function sendEmail({ to, subject, heading, bodyHtml, ctaText, ctaUrl, attachments }) {
+export async function sendEmail({ to, subject, heading, bodyHtml, ctaText, ctaUrl, attachments, bcc, replyTo }) {
   const key = process.env.RESEND_API_KEY
   const from = process.env.EMAIL_FROM || 'onboarding@resend.dev'
   if (!key) {
     console.warn(`[email skipped — no RESEND_API_KEY] to=${to} subject="${subject}"`)
-    return { skipped: true }
+    return { skipped: true, reason: 'email not configured' }
   }
   try {
     const resp = await fetch('https://api.resend.com/emails', {
@@ -35,11 +35,14 @@ export async function sendEmail({ to, subject, heading, bodyHtml, ctaText, ctaUr
         subject,
         html: WRAP(heading, bodyHtml, ctaText, ctaUrl),
         ...(attachments ? { attachments } : {}),
+        ...(bcc ? { bcc: Array.isArray(bcc) ? bcc : [bcc] } : {}),
+        ...(replyTo ? { reply_to: replyTo } : {}),
       }),
     })
     if (!resp.ok) {
-      console.error('[email failed]', resp.status, await resp.text())
-      return { skipped: true }
+      const detail = await resp.text()
+      console.error('[email failed]', resp.status, detail)
+      return { skipped: true, reason: `email provider said ${resp.status}` }
     }
     return { skipped: false }
   } catch (err) {

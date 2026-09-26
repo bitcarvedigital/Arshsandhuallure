@@ -22,6 +22,30 @@ export async function authedFetch(path, body) {
   return json
 }
 
+// POST with the session JWT and save the response (e.g. an invoice PDF).
+export async function authedDownload(path, body, filename) {
+  const { data } = await supabase.auth.getSession()
+  const jwt = data?.session?.access_token
+  const resp = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}) },
+    body: JSON.stringify(body || {}),
+  })
+  if (!resp.ok) {
+    const json = await resp.json().catch(() => ({}))
+    throw new Error(json.error || 'Could not download — please try again')
+  }
+  const blob = await resp.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename || 'download.pdf'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 10_000)
+}
+
 export async function publicFetch(path, body) {
   const resp = await fetch(path, {
     method: 'POST',

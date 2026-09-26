@@ -4,7 +4,7 @@ const BUCKET = 'client-uploads'
 
 // Everything the portal needs, in one round of parallel queries (all RLS-scoped).
 export async function loadPortalBundle() {
-  const [agreement, payments, intakes, members, docs, settings] = await Promise.all([
+  const [agreement, payments, intakes, members, docs, settings, events, lines, timelines, invoices] = await Promise.all([
     supabase
       .from('agreements')
       .select('*')
@@ -21,6 +21,10 @@ export async function loadPortalBundle() {
     supabase.from('party_members').select('*').order('is_bride', { ascending: false }).order('created_at'),
     supabase.from('client_documents').select('*'),
     supabase.from('app_settings').select('value').eq('key', 'etransfer_email').maybeSingle(),
+    supabase.from('events').select('*').order('sort_order'),
+    supabase.from('event_line_items').select('*').order('sort_order'),
+    supabase.from('event_timelines').select('*'), // RLS: published only
+    supabase.from('invoices').select('*').order('created_at', { ascending: false }), // RLS: issued only
   ])
   return {
     agreement: agreement.data || null,
@@ -29,6 +33,10 @@ export async function loadPortalBundle() {
     members: members.data || [],
     docs: docs.data || [],
     etransferEmail: settings.data?.value || '',
+    events: events.data || [],
+    lines: lines.data || [],
+    timelines: timelines.data || [],
+    invoices: invoices.data || [],
   }
 }
 

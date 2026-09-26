@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../AuthProvider'
 import PortalShell from '../../shared/PortalShell'
-import { Spinner, DiamondRule, SectionHeading } from '../../shared/ui'
+import { Spinner, MicroLabel, emptyNote, rowLine, rowLink } from '../../shared/ui'
 
 const NAV = [
   { to: '/portal', label: 'Journey' },
@@ -45,31 +45,29 @@ export default function Docs() {
 
   return (
     <PortalShell title="Documents" nav={NAV} onSignOut={signOut}>
-      <SectionHeading eyebrow="Your Documents" title="Everything in one place" className="mb-2" />
-      <p className="text-sm text-[#7A6355] max-w-lg">
+      <MicroLabel className="mb-2">Your Documents</MicroLabel>
+      <h1 className="font-heading text-3xl text-dark">Everything in one place</h1>
+      <p className="text-sm text-muted max-w-lg mt-2">
         Documents appear here as your journey unfolds — Arsh unlocks each one at the right moment.
       </p>
-      <DiamondRule className="my-8" />
       {!docs ? (
         <Spinner />
       ) : docs.length === 0 ? (
-        <p className="text-sm text-[#A89080] border border-dashed border-[#C8B8AC] p-8 text-center">
-          Nothing here yet — your documents unlock as each step completes.
-        </p>
+        <p className={`${emptyNote} mt-10`}>Nothing here yet — your documents unlock as each step completes.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="mt-10 border-t border-line">
           {docs
             .filter((d) => DOC_META[d.doc_type])
             .map((d) => (
-              <Link
-                key={d.doc_type}
-                to={DOC_META[d.doc_type].to}
-                className="border border-[#C8B8AC] bg-[#FBF8F4] hover:border-gold transition-colors p-6"
-              >
-                <span className="inline-block w-2 h-2 border border-gold rotate-45 mb-3" />
-                <h3 className="font-heading text-lg text-dark">{DOC_META[d.doc_type].title}</h3>
-                <p className="text-xs text-[#8A7A70] mt-1">{DOC_META[d.doc_type].desc}</p>
-              </Link>
+              <div key={d.doc_type} className={rowLine}>
+                <Link to={DOC_META[d.doc_type].to} className={rowLink}>
+                  <span className="min-w-0">
+                    <span className="block font-heading text-lg text-dark">{DOC_META[d.doc_type].title}</span>
+                    <span className="block text-sm text-muted mt-0.5">{DOC_META[d.doc_type].desc}</span>
+                  </span>
+                  <span className="shrink-0 whitespace-nowrap text-sm text-gold" aria-hidden="true">Open →</span>
+                </Link>
+              </div>
             ))}
         </div>
       )}

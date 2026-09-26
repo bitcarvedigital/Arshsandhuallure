@@ -81,13 +81,13 @@ export default function PhotoUploader({ label, value = [], onChange, uploadFile,
       <MicroLabel>{label}</MicroLabel>
       <div className="flex flex-wrap gap-3">
         {value.map((item, i) => (
-          <div key={i} className="relative w-20 h-20 border border-[#C8B8AC] bg-beige-card overflow-hidden">
+          <div key={i} className="relative w-20 h-20 rounded-xl bg-beige-card overflow-hidden">
             {item.kind === 'upload' ? (
               previews[item.path] ? (
-                <img src={previews[item.path]} alt="" className="w-full h-full object-cover" />
+                <img src={previews[item.path]} alt={`${label} photo ${i + 1}`} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-[9px] text-[#8A7A70] p-1 text-center">
-                  photo
+                <div className="w-full h-full flex items-center justify-center text-[11px] text-faint p-1 text-center">
+                  Photo
                 </div>
               )
             ) : (
@@ -95,19 +95,25 @@ export default function PhotoUploader({ label, value = [], onChange, uploadFile,
                 href={item.url}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full h-full flex items-center justify-center text-[9px] text-gold underline p-1 text-center break-all"
+                aria-label={`Open linked photo ${i + 1} in a new tab`}
+                className="w-full h-full flex items-center justify-center text-[11px] text-gold underline underline-offset-2 p-1 text-center"
               >
-                link
+                Link ↗
               </a>
             )}
             {!disabled && (
+              // 32px tap area; the visible dot stays small and soft
               <button
                 type="button"
                 onClick={() => onChange(value.filter((_, j) => j !== i))}
-                aria-label="Remove"
-                className="absolute top-0 right-0 w-5 h-5 bg-dark text-beige text-[10px] leading-5 cursor-pointer"
+                aria-label={`Remove ${item.kind === 'link' ? 'link' : 'photo'} ${i + 1} from ${label}`}
+                className="group absolute top-0 right-0 w-8 h-8 flex items-center justify-center cursor-pointer"
               >
-                ×
+                <span className="w-6 h-6 rounded-full bg-dark/75 group-hover:bg-dark text-beige flex items-center justify-center transition-colors">
+                  <svg aria-hidden="true" viewBox="0 0 12 12" className="w-2.5 h-2.5">
+                    <path d="M2.5 2.5l7 7M9.5 2.5l-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </span>
               </button>
             )}
           </div>
@@ -117,7 +123,8 @@ export default function PhotoUploader({ label, value = [], onChange, uploadFile,
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={busy}
-            className="w-20 h-20 border border-dashed border-[#A89080] text-[#8A7060] text-[10px] tracking-[0.15em] uppercase hover:border-gold hover:text-gold transition-colors cursor-pointer disabled:opacity-50"
+            aria-label={busy ? 'Uploading…' : `Add photos — ${label}`}
+            className="w-20 h-20 rounded-xl bg-beige-card/70 text-muted text-[11px] tracking-[0.15em] uppercase hover:bg-[#E3D6C8] hover:text-dark transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-default"
           >
             {busy ? '…' : '+ Add'}
           </button>
@@ -127,15 +134,17 @@ export default function PhotoUploader({ label, value = [], onChange, uploadFile,
         <div className="flex gap-2 items-center">
           <input
             type="text"
+            inputMode="url"
             value={link}
             onChange={(e) => setLink(e.target.value)}
             placeholder="or paste a photo link"
-            className="bg-transparent border-b border-[#C8B8AC] py-2 text-dark placeholder-[#8A7060] text-xs focus:outline-none focus:border-gold flex-1"
+            aria-label={`Photo link — ${label}`}
+            className="bg-transparent border-b border-[#C8B8AC] py-2 text-dark placeholder-[#8A7060] text-sm focus:outline-none focus:border-gold flex-1 min-w-0"
           />
           <button
             type="button"
             onClick={addLink}
-            className="text-[10px] tracking-[0.2em] uppercase text-gold cursor-pointer whitespace-nowrap"
+            className="min-h-[40px] px-2 -mr-2 text-[11px] tracking-[0.2em] uppercase text-gold hover:text-dark transition-colors cursor-pointer whitespace-nowrap"
           >
             Add link
           </button>
@@ -149,7 +158,9 @@ export default function PhotoUploader({ label, value = [], onChange, uploadFile,
         className="hidden"
         onChange={(e) => handleFiles(e.target.files)}
       />
-      <ErrorNote>{error}</ErrorNote>
+      <div role="status" aria-live="polite" className="empty:hidden">
+        <ErrorNote>{error}</ErrorNote>
+      </div>
     </div>
   )
 }

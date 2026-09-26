@@ -75,3 +75,10 @@
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);
   mask-image: linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);
 }
+
+/* Portal only (.portal-ui on every signed-in page, login and party form): an
+   on-brand keyboard focus ring. Inputs keep their gold underline instead. */
+.portal-ui :where(a, button, [tabindex]):focus-visible {
+  outline: 2px solid #7A5A32;
+  outline-offset: 3px;
+}
