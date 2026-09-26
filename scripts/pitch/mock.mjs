@@ -1,9 +1,11 @@
 // Network-level mock of Supabase (PostgREST + auth + storage) and the /api
-// serverless functions, attached to a Playwright BrowserContext.
+// serverless functions, attached to a Playwright BrowserContext. Just enough
+// PostgREST to drive the portal: eq/neq/in/is/gt/gte/lt/lte filters, order,
+// limit, single-object responses, HEAD counts, inserts, updates and deletes.
 import { createRequire } from 'node:module'
-import { ADMIN_USER, CLIENT_USER, CLIENT_ID, PARTY_TOKEN } from './fixtures.mjs'
+import { ADMIN_USER, CLIENT_USER, CLIENT_ID, PARTY_INFO } from './fixtures.mjs'
 
-const require = createRequire(new URL('../../package.json', import.meta.url).pathname)
+const require = createRequire(import.meta.url)
 const sharp = require('sharp')
 
 export const SUPA = 'http://mock.supabase'
@@ -33,36 +35,25 @@ async function placeholder(slot, idx) {
 }
 
 function parseFilter(raw) {
-  // "eq.value" | "in.(a,b)" | "is.null" | "gt.x" ...
   const dot = raw.indexOf('.')
-  const op = raw.slice(0, dot)
-  const val = raw.slice(dot + 1)
-  return { op, val }
+  return { op: raw.slice(0, dot), val: raw.slice(dot + 1) }
 }
 
 function matches(row, col, { op, val }) {
   const v = row[col]
   switch (op) {
-    case 'eq':
-      return String(v) === val
-    case 'neq':
-      return String(v) !== val
+    case 'eq': return String(v) === val
+    case 'neq': return String(v) !== val
     case 'in': {
       const list = val.replace(/^\(|\)$/g, '').split(',').map((s) => s.trim().replace(/^"|"$/g, ''))
       return list.includes(String(v))
     }
-    case 'is':
-      return val === 'null' ? v == null : val === 'true' ? v === true : v === false
-    case 'gt':
-      return v != null && v > val
-    case 'gte':
-      return v != null && v >= val
-    case 'lt':
-      return v != null && v < val
-    case 'lte':
-      return v != null && v <= val
-    default:
-      return true
+    case 'is': return val === 'null' ? v == null : val === 'true' ? v === true : v === false
+    case 'gt': return v != null && v > val
+    case 'gte': return v != null && v >= val
+    case 'lt': return v != null && v < val
+    case 'lte': return v != null && v <= val
+    default: return true
   }
 }
 
@@ -86,29 +77,45 @@ function applyOrder(rows, orderParam) {
   })
 }
 
+// Mimic RLS: a client only sees her own rows, visible documents, published
+// timelines and issued invoices.
+const OWN = ['agreements', 'payments', 'intakes', 'party_members', 'party_share_tokens', 'submissions', 'events', 'event_line_items', 'event_timelines', 'invoices', 'client_documents']
 function scopeForPersona(state, table, rows) {
-  // Mimic RLS: a client only sees her own rows and only visible documents.
   if (state.persona !== 'client') return rows
   if (table === 'clients') return rows.filter((r) => r.id === CLIENT_ID)
-  if (table === 'client_documents') return rows.filter((r) => r.client_id === CLIENT_ID && r.visible)
-  if (['agreements', 'payments', 'intakes', 'party_members', 'party_share_tokens', 'submissions'].includes(table)) {
-    return rows.filter((r) => r.client_id === CLIENT_ID)
-  }
-  return rows
+  if (table === 'admin_notes') return []
+  if (!OWN.includes(table)) return rows
+  let out = rows.filter((r) => r.client_id === CLIENT_ID)
+  if (table === 'client_documents' || table === 'event_timelines') out = out.filter((r) => r.visible)
+  if (table === 'invoices') out = out.filter((r) => r.status === 'issued')
+  return out
 }
+
+// drop embedded relations the query didn't ask for
+function shape(table, rows, select) {
+  if (table !== 'clients') return rows
+  const s = select || '*'
+  return rows.map((r) => {
+    const o = { ...r }
+    if (!/admin_notes/.test(s)) delete o.admin_notes
+    if (!/events\s*\(/.test(s)) delete o.events
+    return o
+  })
+}
+
+const rowId = (r) => r.id ?? r.key ?? r.event_id ?? r.client_id
 
 export function attachMock(context, state) {
   const { db } = state
 
-  // ---- PostgREST -----------------------------------------------------------
   context.route(`${SUPA}/rest/v1/**`, async (route, request) => {
     const url = new URL(request.url())
     const method = request.method()
     const path = url.pathname.replace('/rest/v1/', '')
     const headers = request.headers()
     const wantsObject = (headers.accept || '').includes('vnd.pgrst.object')
-    const json = (body, status = 200, extra = {}) =>
-      route.fulfill({ status, contentType: 'application/json', headers: { 'access-control-allow-origin': '*', ...extra }, body: JSON.stringify(body) })
+    const json = (body, status = 200) =>
+      route.fulfill({ status, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(body) })
 
     if (path.startsWith('rpc/')) {
       const fn = path.slice(4)
@@ -117,7 +124,7 @@ export function attachMock(context, state) {
     }
 
     const table = path
-    let rows = scopeForPersona(state, table, db[table] || [])
+    const rows = scopeForPersona(state, table, db[table] || [])
     const filters = []
     for (const [k, v] of url.searchParams.entries()) {
       if (['select', 'order', 'limit', 'offset', 'on_conflict', 'columns'].includes(k)) continue
@@ -137,6 +144,7 @@ export function attachMock(context, state) {
       let out = applyOrder(filtered, url.searchParams.get('order'))
       const limit = url.searchParams.get('limit')
       if (limit) out = out.slice(0, Number(limit))
+      out = shape(table, out, url.searchParams.get('select'))
       if (wantsObject) {
         if (out.length !== 1) return json({ code: 'PGRST116', message: 'no rows' }, 406)
         return json(out[0])
@@ -147,67 +155,49 @@ export function attachMock(context, state) {
     if (method === 'POST') {
       const body = request.postDataJSON()
       const list = Array.isArray(body) ? body : [body]
-      const created = list.map((b) => ({
-        id: crypto.randomUUID(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        status: 'draft',
-        ...b,
-      }))
+      const created = list.map((b) => ({ id: crypto.randomUUID(), created_at: new Date().toISOString(), updated_at: new Date().toISOString(), status: 'draft', ...b }))
       db[table] = [...(db[table] || []), ...created]
       return json(wantsObject ? created[0] : created, 201)
     }
 
     if (method === 'PATCH') {
       const patch = request.postDataJSON()
-      const ids = new Set(filtered.map((r) => r.id ?? r.key ?? r.client_id))
-      db[table] = (db[table] || []).map((r) => (ids.has(r.id ?? r.key ?? r.client_id) ? { ...r, ...patch, updated_at: new Date().toISOString() } : r))
-      const updated = (db[table] || []).filter((r) => ids.has(r.id ?? r.key ?? r.client_id))
+      const ids = new Set(filtered.map(rowId))
+      db[table] = (db[table] || []).map((r) => (ids.has(rowId(r)) ? { ...r, ...patch, updated_at: new Date().toISOString() } : r))
+      const updated = (db[table] || []).filter((r) => ids.has(rowId(r)))
       return json(wantsObject ? updated[0] : updated)
     }
 
     if (method === 'DELETE') {
-      const ids = new Set(filtered.map((r) => r.id))
-      db[table] = (db[table] || []).filter((r) => !ids.has(r.id))
+      const ids = new Set(filtered.map(rowId))
+      db[table] = (db[table] || []).filter((r) => !ids.has(rowId(r)))
       return json([])
     }
 
     return json({ error: 'unhandled' }, 500)
   })
 
-  // ---- Auth ----------------------------------------------------------------
   context.route(`${SUPA}/auth/v1/**`, async (route, request) => {
-    const url = new URL(request.url())
-    const p = url.pathname
-    const user = state.persona === 'admin' ? ADMIN_USER : CLIENT_USER
-    const fullUser = { ...user, aud: 'authenticated', role: 'authenticated', app_metadata: {}, user_metadata: {}, created_at: '2026-08-01T00:00:00Z' }
-    if (p.endsWith('/user')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(fullUser) })
+    const p = new URL(request.url()).pathname
+    const user = fullUser(state.persona)
+    if (p.endsWith('/user')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(user) })
     if (p.endsWith('/logout')) return route.fulfill({ status: 204, body: '' })
-    if (p.endsWith('/token')) {
-      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(makeSession(fullUser)) })
-    }
+    if (p.endsWith('/token')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(makeSession(user)) })
     return route.fulfill({ status: 200, contentType: 'application/json', body: '{}' })
   })
 
-  // ---- Storage -------------------------------------------------------------
   context.route(`${SUPA}/storage/v1/**`, async (route, request) => {
-    const url = new URL(request.url())
-    const p = url.pathname
+    const p = new URL(request.url()).pathname
     if (request.method() === 'POST' && p.includes('/object/sign/')) {
       const objPath = p.split('/object/sign/')[1]
-      return route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ signedURL: `/object/sign/${objPath}?token=demo` }),
-      })
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ signedURL: `/object/sign/${objPath}?token=demo` }) })
     }
     if (request.method() === 'GET' && p.includes('/object/sign/')) {
       const parts = p.split('/')
       const file = parts[parts.length - 1]
       const slot = parts[parts.length - 2]
       const idx = Number((file.match(/\d+/) || [1])[0])
-      const buf = await placeholder(slot, idx)
-      return route.fulfill({ status: 200, contentType: 'image/jpeg', body: buf })
+      return route.fulfill({ status: 200, contentType: 'image/jpeg', body: await placeholder(slot, idx) })
     }
     if (request.method() === 'POST' || request.method() === 'PUT') {
       return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ Key: 'client-uploads/x' }) })
@@ -215,47 +205,37 @@ export function attachMock(context, state) {
     return route.fulfill({ status: 404, body: '' })
   })
 
-  // ---- /api serverless functions ------------------------------------------
   context.route('**/api/**', async (route, request) => {
-    const url = new URL(request.url())
-    const p = url.pathname
+    const p = new URL(request.url()).pathname
     const json = (body, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) })
     if (p.endsWith('/api/invite-info')) return json({ valid: true, firstName: 'Priya', email: CLIENT_USER.email })
-    if (p.endsWith('/api/party/info')) return json({ valid: true, brideFirstName: 'Priya', eventDate: '2026-11-14' })
+    if (p.endsWith('/api/party/info')) return json(PARTY_INFO)
     if (p.endsWith('/api/party/upload-url')) return json({ path: 'x/y/z.jpg', token: 'demo' })
     if (p.endsWith('/api/party/submit')) return json({ ok: true })
-    if (p.endsWith('/api/admin/create-client')) {
-      return json({ clientId: 'c1c1c1c1-0000-4000-8000-000000000002', inviteUrl: 'https://bellerose.example/join/Zt7Qm2VbKd9RxL4nHs8WcPy3AgEu1JfT' })
-    }
+    if (p.endsWith('/api/admin/create-client')) return json({ clientId: 'c1c1c1c1-0000-4000-8000-000000000002', inviteUrl: 'https://bellerose.example/join/Zt7Qm2VbKd9RxL4nHs8WcPy3AgEu1JfT' })
     if (p.endsWith('/api/sign-agreement')) return json({ agreement: db.agreements[0] })
     return json({ error: 'not mocked' }, 404)
   })
 }
 
+function fullUser(persona) {
+  const user = persona === 'admin' ? ADMIN_USER : CLIENT_USER
+  return { ...user, aud: 'authenticated', role: 'authenticated', app_metadata: {}, user_metadata: {}, created_at: '2026-08-01T00:00:00Z' }
+}
+
 export function makeSession(user) {
   const expires_at = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30
-  return {
-    access_token: 'demo-access-token',
-    refresh_token: 'demo-refresh-token',
-    expires_in: 60 * 60 * 24 * 30,
-    expires_at,
-    token_type: 'bearer',
-    user,
-  }
+  return { access_token: 'demo-access-token', refresh_token: 'demo-refresh-token', expires_in: 60 * 60 * 24 * 30, expires_at, token_type: 'bearer', user }
 }
 
 export async function seedSession(context, persona) {
-  const user = persona === 'admin' ? ADMIN_USER : CLIENT_USER
-  const fullUser = { ...user, aud: 'authenticated', role: 'authenticated', app_metadata: {}, user_metadata: {}, created_at: '2026-08-01T00:00:00Z' }
-  const session = makeSession(fullUser)
+  const session = makeSession(fullUser(persona))
   await context.addInitScript(
     ({ key, value }) => {
       try {
         window.localStorage.setItem(key, value)
       } catch {}
     },
-    { key: STORAGE_KEY, value: JSON.stringify(session) }
+    { key: STORAGE_KEY, value: JSON.stringify(session) },
   )
 }
-
-export { PARTY_TOKEN }
