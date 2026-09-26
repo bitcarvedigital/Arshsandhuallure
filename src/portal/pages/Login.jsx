@@ -89,14 +89,14 @@ export default function Login({ admin }) {
       </Helmet>
       <div className="w-full max-w-[360px]">
         <header className="text-center">
-          {/* pl matches the tracking so the underline sits centred under the ink */}
+          {/* pl matches the tracking so the name sits optically centred */}
           <Link
             to="/"
-            className="inline-block font-heading text-[1.05rem] tracking-[0.08em] pl-[0.08em] pb-1 border-b border-gold/60 text-dark hover:text-gold hover:border-gold transition-colors duration-300"
+            className="inline-block font-heading text-[1.2rem] tracking-[0.08em] pl-[0.08em] text-dark hover:text-gold transition-colors duration-300"
           >
             Arsh Sandhu Allure
           </Link>
-          <h1 className="font-heading text-[2.6rem] leading-tight text-dark mt-4">
+          <h1 className="font-heading text-[2.6rem] leading-tight text-dark mt-1">
             <em className="text-gold">{admin ? 'Studio' : 'Client'}</em> Login
           </h1>
           <p className="text-sm text-[#6B5D53] mt-2">
